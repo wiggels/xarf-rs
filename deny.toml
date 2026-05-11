@@ -15,30 +15,31 @@ ignore = []
 
 [licenses]
 version = 2
-# Permissive licenses commonly compatible with the crate's dual MIT/Apache-2.0.
-# Add to this list if a justified copyleft or unusual licence creeps in via a
-# transitive dep.
+# The allowlist is kept tight — only licenses that are actually pulled in by
+# the current dep tree. cargo-deny emits "unmatched license allowance"
+# warnings for entries here that no dep uses, so adding speculatively just
+# generates noise. When a new license appears (audit job will fail with
+# "license is not explicitly allowed"), evaluate it for compatibility with
+# the MIT license this crate ships under, then add it here with a comment.
 allow = [
     "MIT",
+    "MIT-0",           # MIT No Attribution — strictly more permissive than MIT
     "Apache-2.0",
     "Apache-2.0 WITH LLVM-exception",
     "BSD-2-Clause",
-    "BSD-3-Clause",
-    "ISC",
     "Unicode-3.0",
-    "Unicode-DFS-2016",
-    "CC0-1.0",
     "Zlib",
-    "MPL-2.0",
-    "0BSD",
 ]
 confidence-threshold = 0.8
 
 [bans]
-multiple-versions = "warn"
+# Duplicate versions are routine when several transitive deps target
+# different minor releases of low-level crates (`hashbrown`, `getrandom`,
+# `wit-bindgen`, etc.). Pinning sub-deps to force convergence is brittle and
+# rarely worth the maintenance cost — accept them. The audit job still
+# catches real concerns: yanked crates, advisories, and license drift.
+multiple-versions = "allow"
 wildcards = "deny"
-# Allowed wildcards (e.g. for in-workspace deps). Add `{ name = "my-crate" }`
-# entries here if you intentionally use a wildcard for a workspace member.
 allow-wildcard-paths = false
 
 [sources]

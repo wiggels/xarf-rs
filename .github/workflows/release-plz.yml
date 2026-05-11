@@ -11,8 +11,21 @@ name: Release
 #   publishes to crates.io, and creates a GitHub Release with the
 #   auto-generated notes.
 #
-# Two jobs are split out so they run independently and don't block each
-# other. See https://release-plz.dev for full docs.
+# ## Why the `preflight` gate exists
+#
+# GitHub Actions workflows are independent — when a commit lands on `main`,
+# `ci.yml`, `audit.yml`, and this workflow all start in parallel. Without
+# the preflight gate, `release-plz release` would publish to crates.io
+# even if `audit.yml` (cargo-deny / cargo-audit) is failing on the same
+# commit. That's a real foot-gun: a yanked dep, a fresh CVE, or a license
+# violation could ship to users before the audit job finishes.
+#
+# The `preflight` job re-runs the critical checks inside this workflow,
+# and the publish job `needs: preflight` so it can't fire until they pass.
+# This is belt-and-suspenders alongside branch protection, which the
+# maintainer should also enable on `main` (Settings → Branches → Branch
+# protection rules → Require status checks before merging: ci.yml, audit.yml,
+# semver.yml).
 #
 # ## Set-up checklist (one-time, after first push)
 #
@@ -25,6 +38,9 @@ name: Release
 #    `GITHUB_TOKEN` (works for opening PRs but cannot trigger other
 #    workflows on the merge — that means CI won't re-run on the auto-PR
 #    unless you push to it). The PAT route is recommended.
+# 4. Enable branch protection on `main` requiring `ci.yml`, `audit.yml`,
+#    and `semver.yml` to pass before merging. This is the primary defense;
+#    the preflight gate below is the backup.
 
 on:
   push:
@@ -39,16 +55,65 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+  CARGO_INCREMENTAL: "0"
+
 jobs:
   # ---------------------------------------------------------------------------
+  # Preflight: every check that, if failing, should block a publish.
+  #
+  # Mirrors the critical jobs in ci.yml + audit.yml so that a publish
+  # cannot fire while those workflows are red on the same commit.
+  # ---------------------------------------------------------------------------
+  preflight:
+    name: preflight (gate publish on tests + audit)
+    if: ${{ github.repository_owner == 'wiggels' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo fmt --check
+        run: cargo fmt --all --check
+
+      - name: cargo clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: cargo test
+        run: cargo test --all-targets --locked
+
+      - name: cargo deny check
+        # `check` (no args) runs advisories, bans, licenses, and sources.
+        # This is the same set audit.yml runs — duplicated here intentionally
+        # so a parallel audit-job failure can't be missed.
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
+
+      - name: cargo publish --dry-run
+        # Final safety net: refuse to publish if `cargo publish` itself
+        # would reject the package (missing fields, unbundled paths, etc.).
+        run: cargo publish --dry-run --locked
+
+  # ---------------------------------------------------------------------------
   # Publish a tagged release to crates.io when the release PR is merged.
+  # Gated on `preflight` so a parallel CI/audit failure on the same commit
+  # cannot slip past.
   # ---------------------------------------------------------------------------
   release-plz-release:
     name: release-plz release
     if: ${{ github.repository_owner == 'wiggels' }}
+    needs: preflight
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
@@ -63,6 +128,11 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Open / update the next release PR. Idempotent — safe to re-run.
+  #
+  # NOT gated on `preflight`: opening a PR is harmless even when the tree is
+  # red, and gating it would delay the next release PR every time CI flakes.
+  # The PR itself will get its own CI run, so reviewers see status before
+  # merging.
   # ---------------------------------------------------------------------------
   release-plz-pr:
     name: release-plz PR
@@ -72,7 +142,7 @@ jobs:
       group: release-plz-pr-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
