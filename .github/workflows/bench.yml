@@ -14,12 +14,19 @@ name: Benchmarks
 #
 # ## Set-up checklist (one-time)
 #
-# 1. Enable GitHub Pages on this repo (Settings → Pages → source `gh-pages`).
-# 2. Make sure the workflow has write access to push to `gh-pages`. This is
+# 1. After enabling Pages in repo settings, the first `push` run of this
+#    workflow self-bootstraps the `gh-pages` branch (see the
+#    "Bootstrap gh-pages branch" step below). The action itself does NOT
+#    create the branch on first run — without bootstrapping you'd see
+#    `could not find remote ref gh-pages` and the workflow would fail.
+# 2. Enable GitHub Pages on this repo (Settings → Pages → source `gh-pages`).
+#    You can do this either before or after the first run; the workflow
+#    creates the branch either way.
+# 3. Make sure the workflow has write access to push to `gh-pages`. This is
 #    on by default for the default GITHUB_TOKEN as long as repo settings
 #    allow it (Settings → Actions → General → Workflow permissions → Read
 #    and write permissions).
-# 3. Disable this workflow on forks if you don't want forks to run it. The
+# 4. Disable this workflow on forks if you don't want forks to run it. The
 #    pull_request trigger only runs the alert step, not the storage step, so
 #    forks fail-safely without write access.
 
@@ -47,6 +54,45 @@ jobs:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+
+      # github-action-benchmark refuses to push history if `gh-pages` doesn't
+      # already exist — the error is "could not find remote ref gh-pages".
+      # Bootstrap an empty orphan branch on the very first run so the action
+      # has somewhere to push. Subsequent runs no-op because the branch is
+      # already there. Skip this on PRs since they don't push to gh-pages.
+      - name: Bootstrap gh-pages branch (first run only)
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            echo "gh-pages already exists — nothing to bootstrap."
+            exit 0
+          fi
+          echo "gh-pages not found — creating empty orphan branch."
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Switch to an orphan branch in a fresh worktree so we don't disturb
+          # the current checkout (the benchmark step needs the source tree).
+          tmpdir="$(mktemp -d)"
+          git worktree add --detach "$tmpdir"
+          (
+            cd "$tmpdir"
+            git checkout --orphan gh-pages
+            git rm -rf . >/dev/null 2>&1 || true
+            cat > index.html <<'EOF'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>xarf-rs benchmarks</title>
+          <p>Benchmark history is published under
+          <a href="./dev/bench/">/dev/bench/</a>.</p>
+          EOF
+            git add index.html
+            git commit -m "ci: bootstrap gh-pages for benchmark history"
+            git push origin gh-pages
+          )
+          git worktree remove --force "$tmpdir"
 
       - name: Run benchmarks
         # `--output-format bencher` makes criterion emit `test ... bench:` lines
