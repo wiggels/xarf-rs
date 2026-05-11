@@ -1,0 +1,37 @@
+{
+	"xarf_version": "4.2.0",
+	"report_id": "a345667c-bda6-48c5-a511-e345a0b50158",
+	"timestamp": "2025-01-11T08:00:36Z",
+	"reporter": {
+		"org": "Digital Rights Management",
+		"contact": "takedowns@drm-service.example",
+		"domain": "drm-service.example"
+	},
+	"sender": {
+		"org": "Digital Rights Management",
+		"contact": "takedowns@drm-service.example",
+		"domain": "drm-service.example"
+	},
+	"source_identifier": "video-platform.example.com",
+	"category": "copyright",
+	"type": "ugc_platform",
+	"evidence_source": "automated_detection",
+	"infringing_url": "https://video-platform.example.com/watch?v=copyrighted_content",
+	"platform_name": "VideoShare Platform",
+	"uploader_id": "user123456",
+	"work_title": "Copyrighted TV Show S01E01",
+	"rights_holder": "Television Network Inc",
+	"evidence": [
+		{
+			"content_type": "application/json",
+			"description": "Video metadata and content fingerprint",
+			"payload": "eyJ2aWRlb19pZCI6ICJjb3B5cmlnaHRlZF9jb250ZW50IiwgInVwbG9hZGVyIjogInVzZXIxMjM0NTYifQ==",
+			"hash": "sha256:737dd9b97fbd14ceadced0ef6a3f23c26e45736025701cd1003b15cfa7cc204a"
+		}
+	],
+	"tags": [
+		"copyright:ugc",
+		"platform:video",
+		"content:tv_show"
+	]
+}

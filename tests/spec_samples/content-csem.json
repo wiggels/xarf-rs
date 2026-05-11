@@ -1,0 +1,45 @@
+{
+	"xarf_version": "4.2.0",
+	"report_id": "40daae21-fbe5-4b5d-bfb3-7ea6c2f82cae",
+	"timestamp": "2025-01-20T10:30:00Z",
+	"reporter": {
+		"org": "Content Safety Service",
+		"contact": "safety@example.org",
+		"domain": "example.org"
+	},
+	"sender": {
+		"org": "Content Safety Service",
+		"contact": "safety@example.org",
+		"domain": "example.org"
+	},
+	"source_identifier": "198.51.100.42",
+	"category": "content",
+	"type": "csem",
+	"url": "https://example.com/illegal-content",
+	"domain": "example.com",
+	"classification": "A1",
+	"detection_method": "ai_detection",
+	"media_type": "image",
+	"ncmec_report_id": "NCMEC-2025-0001234",
+	"file_hash": {
+		"md5": "d41d8cd98f00b204e9800998ecf8427e",
+		"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+	},
+	"reporting_obligations": [
+		"NCMEC",
+		"local_law_enforcement"
+	],
+	"evidence": [
+		{
+			"content_type": "text/plain",
+			"description": "Hash match details",
+			"payload": "SGFzaCBtYXRjaCBkZXRhaWxz",
+			"hash": "sha256:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
+		}
+	],
+	"tags": [
+		"csem:detected",
+		"classification:a1"
+	],
+	"exploitation_type": "distribution"
+}

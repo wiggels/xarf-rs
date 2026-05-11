@@ -1,0 +1,30 @@
+---
+source: tests/snapshots.rs
+expression: errors
+---
+[
+  [
+    "",
+    "\"confidence\" is a required property"
+  ],
+  [
+    "",
+    "\"evidence\" is a required property"
+  ],
+  [
+    "",
+    "\"evidence_source\" is a required property"
+  ],
+  [
+    "",
+    "\"message_id\" is a required property"
+  ],
+  [
+    "",
+    "\"smtp_to\" is a required property"
+  ],
+  [
+    "",
+    "\"subject\" is a required property"
+  ]
+]

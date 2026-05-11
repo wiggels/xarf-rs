@@ -1,0 +1,62 @@
+---
+source: tests/snapshots.rs
+expression: info
+---
+[
+  [
+    "confidence",
+    "RECOMMENDED: RECOMMENDED: Confidence score for this report (0.0 = no confidence, 1.0 = complete confidence)"
+  ],
+  [
+    "description",
+    "OPTIONAL: OPTIONAL: Human-readable description of the abuse incident"
+  ],
+  [
+    "evidence",
+    "RECOMMENDED: RECOMMENDED: Array of evidence items supporting this abuse report"
+  ],
+  [
+    "evidence_source",
+    "RECOMMENDED: RECOMMENDED: Quality and reliability indicator for the evidence provided"
+  ],
+  [
+    "language",
+    "OPTIONAL: OPTIONAL: Primary language of message content (ISO 639-1)"
+  ],
+  [
+    "legacy_version",
+    "OPTIONAL: OPTIONAL: Original XARF version if this report was converted from v3 format"
+  ],
+  [
+    "message_id",
+    "RECOMMENDED: RECOMMENDED: Message ID from headers - helps with deduplication"
+  ],
+  [
+    "recipient_count",
+    "OPTIONAL: OPTIONAL: Number of recipients for bulk spam campaigns"
+  ],
+  [
+    "sender_name",
+    "OPTIONAL: OPTIONAL: Display name of the sender"
+  ],
+  [
+    "smtp_to",
+    "RECOMMENDED: RECOMMENDED: SMTP envelope recipient address"
+  ],
+  [
+    "spam_indicators",
+    "OPTIONAL: OPTIONAL: Indicators specific to spam detection"
+  ],
+  [
+    "subject",
+    "RECOMMENDED: RECOMMENDED: Message subject line"
+  ],
+  [
+    "tags",
+    "OPTIONAL: OPTIONAL: Namespaced tags for categorization, correlation, and automation"
+  ],
+  [
+    "user_agent",
+    "OPTIONAL: OPTIONAL: User agent string from message headers"
+  ]
+]

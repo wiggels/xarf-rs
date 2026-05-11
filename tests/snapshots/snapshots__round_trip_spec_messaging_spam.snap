@@ -1,0 +1,40 @@
+---
+source: tests/snapshots.rs
+expression: reserialised
+---
+{
+  "xarf_version": "4.2.0",
+  "report_id": "02eb480f-8172-431a-9276-c28ba90f694a",
+  "timestamp": "2025-01-11T10:59:45Z",
+  "reporter": {
+    "org": "Example Anti-Spam Service",
+    "contact": "reports@antispam-service.example",
+    "domain": "antispam-service.example"
+  },
+  "sender": {
+    "org": "Example Anti-Spam Service",
+    "contact": "reports@antispam-service.example",
+    "domain": "antispam-service.example"
+  },
+  "source_identifier": "192.168.1.100",
+  "category": "messaging",
+  "type": "spam",
+  "source_port": 25,
+  "evidence_source": "spamtrap",
+  "evidence": [
+    {
+      "content_type": "message/rfc822",
+      "payload": "[base64-payload]",
+      "description": "Complete spam email with headers",
+      "hash": "sha256:cee5863cbfe009a2560168a939bbced8d16eebafa97eb34d7b3b9d90f7bf1a17"
+    }
+  ],
+  "tags": [
+    "spam:commercial",
+    "detection:automated",
+    "language:english"
+  ],
+  "protocol": "smtp",
+  "smtp_from": "marketing@example.com",
+  "subject": "Urgent: Claim Your Prize Now!"
+}

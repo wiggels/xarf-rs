@@ -1,0 +1,40 @@
+---
+source: tests/snapshots.rs
+expression: report
+---
+{
+  "xarf_version": "4.2.0",
+  "report_id": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2024-01-15T14:30:25Z",
+  "reporter": {
+    "org": "Acme",
+    "contact": "abuse@acme.example",
+    "domain": "acme.example"
+  },
+  "sender": {
+    "org": "Acme",
+    "contact": "abuse@acme.example",
+    "domain": "acme.example"
+  },
+  "source_identifier": "192.0.2.1",
+  "category": "messaging",
+  "type": "spam",
+  "source_port": 25,
+  "evidence_source": "spamtrap",
+  "evidence": [
+    {
+      "content_type": "text/plain",
+      "payload": "aGVsbG8sIHhhcmYh",
+      "description": "greeting",
+      "hash": "sha256:40b4bfa6dac5899526168eaa16c725d2ac1b6cca99169fb23851155cd4f2fafa",
+      "size": 12
+    }
+  ],
+  "tags": [
+    "scam:advance_fee",
+    "severity:medium"
+  ],
+  "protocol": "smtp",
+  "smtp_from": "spam@bad.example",
+  "subject": "Cheap meds!"
+}

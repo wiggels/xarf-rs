@@ -1,0 +1,14 @@
+---
+source: tests/snapshots.rs
+expression: "result.errors.iter().map(|e|\njson!({\"field\": e.field, \"message\": e.message})).collect::<Vec<_>>()"
+---
+[
+  {
+    "field": "category",
+    "message": "\"imaginary_category\" is not one of \"messaging\", \"content\" or 5 other candidates"
+  },
+  {
+    "field": "",
+    "message": "{\"xarf_version\":\"4.2.0\",\"report_id\":\"550e8400-e29b-41d4-a716-446655440000\",\"timestamp\":\"2024-01-15T14:30:25Z\",\"reporter\":{\"org\":\"X\",\"contact\":\"x@x.example\",\"domain\":\"x.example\"},\"sender\":{\"org\":\"X\",\"contact\":\"x@x.example\",\"domain\":\"x.example\"},\"source_identifier\":\"192.0.2.1\",\"category\":\"imaginary_category\",\"type\":\"spam\"} is not valid under any of the schemas listed in the 'anyOf' keyword"
+  }
+]

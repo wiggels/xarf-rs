@@ -1,0 +1,32 @@
+---
+source: tests/snapshots.rs
+expression: v4
+---
+{
+  "xarf_version": "4.2.0",
+  "report_id": "[uuid]",
+  "timestamp": "2024-01-15T14:30:25Z",
+  "reporter": {
+    "org": "CERT",
+    "contact": "cert@cert.example",
+    "domain": "cert.example"
+  },
+  "sender": {
+    "org": "CERT",
+    "contact": "cert@cert.example",
+    "domain": "cert.example"
+  },
+  "source_identifier": "203.0.113.5",
+  "category": "connection",
+  "type": "login_attack",
+  "legacy_version": "3",
+  "_internal": {
+    "original_report_type": "Login-Attack",
+    "converted_at": "[timestamp]"
+  },
+  "protocol": "tcp",
+  "first_seen": "2024-01-15T14:30:25Z",
+  "destination_ip": "192.0.2.42",
+  "source_port": 22,
+  "destination_port": 22
+}

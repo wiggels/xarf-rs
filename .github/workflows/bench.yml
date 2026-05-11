@@ -1,0 +1,74 @@
+name: Benchmarks
+
+# Runs `cargo bench` on every PR and on every push to `main`, parses the
+# criterion output via github-action-benchmark, and:
+#
+# * On `main` pushes: appends the result to the historical record stored on
+#   the `gh-pages` branch (`/dev/bench/`). Use the GitHub Pages site of this
+#   repo to see plots over time.
+#
+# * On PRs: leaves a comment with the relative change vs the previous `main`
+#   result. If any benchmark regressed by more than the configured threshold
+#   (default 110% = 10% slower), the workflow fails — making the PR check
+#   red so the regression can't merge silently.
+#
+# ## Set-up checklist (one-time)
+#
+# 1. Enable GitHub Pages on this repo (Settings → Pages → source `gh-pages`).
+# 2. Make sure the workflow has write access to push to `gh-pages`. This is
+#    on by default for the default GITHUB_TOKEN as long as repo settings
+#    allow it (Settings → Actions → General → Workflow permissions → Read
+#    and write permissions).
+# 3. Disable this workflow on forks if you don't want forks to run it. The
+#    pull_request trigger only runs the alert step, not the storage step, so
+#    forks fail-safely without write access.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
+
+# Cancel earlier runs on the same ref — we only care about the latest.
+concurrency:
+  group: bench-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bench:
+    name: Run criterion benches + regression check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run benchmarks
+        # `--output-format bencher` makes criterion emit `test ... bench:` lines
+        # that github-action-benchmark understands directly.
+        run: cargo bench --bench xarf -- --output-format bencher | tee output.txt
+
+      - name: Store result and alert on regression
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: cargo
+          output-file-path: output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # On PRs we don't push to gh-pages, just alert.
+          # On main we push history.
+          auto-push: ${{ github.event_name == 'push' }}
+          # 110 = fail if any benchmark is more than 10% slower than baseline.
+          # Bump this if you have noisier hardware; lower it for tighter
+          # regression detection.
+          alert-threshold: '110%'
+          comment-on-alert: true
+          fail-on-alert: true
+          # Annotate the PR commit so the regression is visible in the
+          # Checks tab even if the bot can't post a comment (e.g. fork PRs).
+          alert-comment-cc-users: '@${{ github.actor }}'
+          summary-always: true

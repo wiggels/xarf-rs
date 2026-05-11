@@ -1,0 +1,22 @@
+---
+source: tests/snapshots.rs
+expression: warnings
+---
+[
+  [
+    "alpha_unknown",
+    "Unknown field 'alpha_unknown' is not defined in the XARF schema"
+  ],
+  [
+    "future_v5_field_a",
+    "Unknown field 'future_v5_field_a' is not defined in the XARF schema"
+  ],
+  [
+    "future_v5_field_b",
+    "Unknown field 'future_v5_field_b' is not defined in the XARF schema"
+  ],
+  [
+    "zulu_unknown",
+    "Unknown field 'zulu_unknown' is not defined in the XARF schema"
+  ]
+]

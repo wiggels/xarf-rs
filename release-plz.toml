@@ -1,0 +1,51 @@
+# release-plz configuration. See https://release-plz.dev/docs/config for the
+# full schema.
+
+[workspace]
+# Run cargo-semver-checks before each release to refuse breaking changes that
+# weren't called out with a major bump.
+semver_check = true
+# Run the full test suite before releasing.
+publish_features = []
+# Sign release tags with whatever key the maintainer has configured locally.
+git_tag_enable = true
+# Don't auto-merge release PRs — keep a human in the loop.
+pr_branch_prefix = "release-plz-"
+
+[changelog]
+# Use the conventional-commits-driven layout.
+header = """# Changelog\n
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+"""
+body = """
+## [{{ version | trim_start_matches(pat="v") }}]\
+    {%- if release_link -%}\
+        ({{ release_link }})\
+    {% endif %} - {{ timestamp | date(format="%Y-%m-%d") }}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {% if commit.breaking %}[**breaking**] {% endif %}\
+    {{ commit.message | upper_first }}\
+    {% if commit.links %} ({% for link in commit.links %}[{{ link.text }}]({{ link.href }}){% if not loop.last %}, {% endif %}{% endfor %}){% endif %}
+{%- endfor %}
+{% endfor %}
+"""
+trim = true
+commit_parsers = [
+    { message = "^feat", group = "Added" },
+    { message = "^add", group = "Added" },
+    { message = "^fix", group = "Fixed" },
+    { message = "^perf", group = "Performance" },
+    { message = "^refactor", group = "Changed" },
+    { message = "^style", group = "Changed" },
+    { message = "^doc", group = "Documentation" },
+    { message = "^test", group = "Tests" },
+    { message = "^chore\\(deps\\)", group = "Dependencies" },
+    { message = "^chore", skip = true },
+    { message = "^ci", skip = true },
+    { body = ".*security", group = "Security" },
+]

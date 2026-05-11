@@ -1,0 +1,49 @@
+# cargo-deny configuration. See https://embarkstudios.github.io/cargo-deny/.
+#
+# The four sections mirror `cargo deny check {advisories,licenses,bans,sources}`.
+
+[graph]
+# Check all targets the crate could plausibly build for. Wildcards are fine.
+all-features = true
+
+[advisories]
+version = 2
+# Fail on any advisory by default; add explicit `ignore` entries with
+# justification if a vulnerable dep is unavoidable.
+yanked = "deny"
+ignore = []
+
+[licenses]
+version = 2
+# Permissive licenses commonly compatible with the crate's dual MIT/Apache-2.0.
+# Add to this list if a justified copyleft or unusual licence creeps in via a
+# transitive dep.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "Zlib",
+    "MPL-2.0",
+    "0BSD",
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Allowed wildcards (e.g. for in-workspace deps). Add `{ name = "my-crate" }`
+# entries here if you intentionally use a wildcard for a workspace member.
+allow-wildcard-paths = false
+
+[sources]
+# Only allow deps from crates.io by default.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

@@ -1,0 +1,45 @@
+name: Semver
+
+# Verifies that public-API changes match the version bump:
+#
+# * If `Cargo.toml`'s version says this is a patch release (e.g. 0.1.x →
+#   0.1.y), the API surface against `main` must be backwards-compatible.
+# * If it's a minor bump (0.x.0 → 0.x+1.0) pre-1.0, breaking changes are
+#   allowed (per Cargo's rules for 0.x).
+# * Post-1.0, breaking changes require a major bump.
+#
+# cargo-semver-checks compares the published rustdoc JSON of HEAD against
+# the latest version on crates.io (or the base of the PR if pre-1.0 with
+# no published version yet) and flags any mismatch.
+#
+# Run locally:
+#
+#   cargo install cargo-semver-checks
+#   cargo semver-checks
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/semver.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  semver:
+    name: cargo-semver-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          # `--baseline-rev` defaults to the base of the PR; if the crate
+          # isn't published to crates.io yet this is the only mode that works.
+          # Once a release exists, drop the `feature-group` flag and let it
+          # default to comparing against the published version.
+          feature-group: only-explicit-features

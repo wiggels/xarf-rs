@@ -1,0 +1,37 @@
+{
+	"xarf_version": "4.2.0",
+	"report_id": "4d725a50-851c-4963-af88-91fbb9ced1ce",
+	"timestamp": "2025-01-11T14:02:29Z",
+	"reporter": {
+		"org": "Bulk Email Monitor",
+		"contact": "reports@email-monitor.example",
+		"domain": "email-monitor.example"
+	},
+	"sender": {
+		"org": "Bulk Email Monitor",
+		"contact": "reports@email-monitor.example",
+		"domain": "email-monitor.example"
+	},
+	"source_identifier": "mail.bulk-sender.example",
+	"category": "messaging",
+	"type": "bulk_messaging",
+	"evidence_source": "automated_filter",
+	"protocol": "smtp",
+	"smtp_from": "promotions@bulk-sender.example",
+	"volume_per_hour": 50000,
+	"recipient_count": 100000,
+	"bounce_rate": 0.45,
+	"evidence": [
+		{
+			"content_type": "text/csv",
+			"description": "Sample of bulk email recipient list",
+			"payload": "cmVjaXBpZW50LGVtYWlsCnVzZXIxQGV4YW1wbGUuY29tLHVzZXIxQGV4YW1wbGUuY29t",
+			"hash": "sha256:7f6f7407e3a24a84b290fdbe1fc5d49d0cbf662058449325d80107b4a2716372"
+		}
+	],
+	"tags": [
+		"bulk:commercial",
+		"volume:high"
+	],
+	"source_port": 25
+}

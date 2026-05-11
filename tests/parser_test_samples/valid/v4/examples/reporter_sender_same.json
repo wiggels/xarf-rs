@@ -1,0 +1,46 @@
+{
+	"xarf_version": "4.0.0",
+	"report_id": "a1b2c3d4-e5f6-7890-ab12-34567cd89012",
+	"timestamp": "2024-11-24T15:30:00Z",
+	"reporter": {
+		"org": "Example ISP Network Operations",
+		"contact": "abuse@example-isp.com",
+		"domain": "example-isp.com"
+	},
+	"sender": {
+		"org": "Example ISP Network Operations",
+		"contact": "abuse@example-isp.com",
+		"domain": "example-isp.com"
+	},
+	"source_identifier": "198.51.100.42",
+	"category": "connection",
+	"type": "port_scan",
+	"evidence_source": "ids",
+	"timestamp_detected": "2024-11-24T15:25:00Z",
+	"protocol": "tcp",
+	"target_ports": [22, 23, 80, 443, 3389, 8080],
+	"scan_type": "horizontal",
+	"packets_sent": 6420,
+	"duration_seconds": 180,
+	"evidence": [
+		{
+			"content_type": "text/plain",
+			"description": "IDS alert log showing port scan activity",
+			"payload": "MjAyNC0xMS0yNCAxNToyNTowMCBQb3J0IHNjYW4gZGV0ZWN0ZWQgZnJvbSAxOTguNTEuMTAwLjQyIHRhcmdldGluZyBtdWx0aXBsZSBob3N0cyBvbiBjb21tb24gcG9ydHM="
+		}
+	],
+	"tags": [
+		"scan:port",
+		"threat:reconnaissance",
+		"automated:yes"
+	],
+	"_internal": {
+		"source_system": "example_isp_ids_v3.2",
+		"transmission_id": "isp_scan_20241124_a1b2c3d4",
+		"report_type": "direct_observation",
+		"customer_network": "198.51.100.0/24",
+		"escalation_tier": "tier1_automated",
+		"mitigation_action": "rate_limited",
+		"notes": "Direct report from ISP - reporter and sender are the same organization. ISP detected malicious activity originating from their own network and is reporting it directly."
+	}
+}

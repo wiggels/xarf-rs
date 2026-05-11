@@ -1,0 +1,5 @@
+---
+source: tests/snapshots.rs
+expression: "warnings.join(\"\\n\")"
+---
+No ReporterOrg found in v3 report, using "Unknown Organization"

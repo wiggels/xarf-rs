@@ -1,0 +1,51 @@
+name: Coverage
+
+# Generates an lcov coverage report with `cargo-llvm-cov` and uploads it to
+# Codecov for line-coverage tracking. Runs on PRs and pushes to `main` so
+# the trend graph stays current and PRs can be reviewed with a coverage
+# delta in the diff.
+#
+# ## Set-up checklist (one-time)
+#
+# 1. Sign in to https://codecov.io with the GitHub org and enable this repo.
+# 2. Codecov for OSS public repos does not require a token; for private
+#    repos add a `CODECOV_TOKEN` secret from the project settings.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: cargo-llvm-cov
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate coverage report
+        # `--workspace` covers every crate in the workspace (only one for now).
+        # `--all-features` exercises every feature flag — currently a no-op
+        # since we have no features, but future-proof.
+        # `--lcov` emits a format Codecov understands.
+        # Skip the perf budget tests because they need release mode to hit
+        # their thresholds and coverage runs are debug-only.
+        run: |
+          cargo llvm-cov --workspace --all-features --locked \
+            --ignore-filename-regex 'tests/perf_budgets\.rs' \
+            --lcov --output-path lcov.info
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}

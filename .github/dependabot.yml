@@ -1,0 +1,55 @@
+# Dependabot configuration.
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Two ecosystems: the Cargo dependency tree (`cargo`) and the GitHub
+# Actions in `.github/workflows/` (`github-actions`). Both update weekly on
+# Monday morning so the maintainer reviews a fresh batch each week.
+
+version: 2
+
+updates:
+  # ---------------------------------------------------------------------------
+  # Cargo: runtime + dev deps
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: "Etc/UTC"
+    # Cap concurrent open PRs so the queue doesn't get spammy.
+    open-pull-requests-limit: 5
+    # Group patch + minor updates together — they're rarely interesting
+    # individually, and bundling reduces CI cost. Major bumps stay separate
+    # because they more often need code changes.
+    groups:
+      cargo-patch-and-minor:
+        update-types: ["patch", "minor"]
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    labels:
+      - dependencies
+      - rust
+
+  # ---------------------------------------------------------------------------
+  # GitHub Actions in .github/workflows/
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(ci)"
+      include: scope
+    labels:
+      - dependencies
+      - github-actions

@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+  # Disable incremental compilation in CI — costs more than it saves with cold caches.
+  CARGO_INCREMENTAL: "0"
+  # Surface backtraces for any panics so failures are diagnosable from logs alone.
+  RUST_BACKTRACE: "1"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Test matrix: stable on Linux + macOS + Windows.
+  # ---------------------------------------------------------------------------
+  test:
+    name: test (${{ matrix.os }}, ${{ matrix.rust }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable]
+        include:
+          # Pin one beta job to catch upcoming-rustc breakage early.
+          - os: ubuntu-latest
+            rust: beta
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo build
+        run: cargo build --all-targets --locked
+      - name: cargo test (debug)
+        run: cargo test --all-targets --locked
+      # Perf budgets are wall-clock based — run them in release mode where
+      # the budgets were measured. They also pass in debug, but headroom is
+      # tighter and CI noise can flake. Restrict the release-mode run to
+      # Linux because Windows/macOS GitHub runners have very different
+      # absolute timings.
+      - name: cargo test --release (perf budgets, Linux only)
+        if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+        run: cargo test --release --test perf_budgets -- --nocapture
+
+  # ---------------------------------------------------------------------------
+  # MSRV: keep the crate building on the version we advertise.
+  # ---------------------------------------------------------------------------
+  msrv:
+    name: MSRV (1.74)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.74"
+      - uses: Swatinem/rust-cache@v2
+      # We only check `cargo build`, not `cargo test`, because dev-deps may
+      # legitimately need a newer toolchain (e.g. tokio/insta versions). The
+      # public crate API and its runtime deps must stay buildable on MSRV.
+      - run: cargo build --locked
+
+  # ---------------------------------------------------------------------------
+  # Lints
+  # ---------------------------------------------------------------------------
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets --locked -- -D warnings
+
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all --check
+
+  # ---------------------------------------------------------------------------
+  # Docs: build with -D warnings so broken intra-doc links fail CI.
+  # ---------------------------------------------------------------------------
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo doc --no-deps --locked --all-features
+
+  # ---------------------------------------------------------------------------
+  # Publish dry-run: catches "this won't actually publish to crates.io"
+  # problems before they hit the release workflow.
+  # ---------------------------------------------------------------------------
+  publish-dry-run:
+    name: cargo publish --dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo publish --dry-run --locked
+
+  # ---------------------------------------------------------------------------
+  # Gate: everything above must pass.
+  # ---------------------------------------------------------------------------
+  all-checks:
+    name: all checks
+    if: always()
+    needs: [test, msrv, clippy, fmt, docs, publish-dry-run]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all checks passed
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ] \
+            || [ "${{ needs.msrv.result }}" != "success" ] \
+            || [ "${{ needs.clippy.result }}" != "success" ] \
+            || [ "${{ needs.fmt.result }}" != "success" ] \
+            || [ "${{ needs.docs.result }}" != "success" ] \
+            || [ "${{ needs.publish-dry-run.result }}" != "success" ]; then
+            echo "One or more checks failed."
+            exit 1
+          fi
+          echo "All checks passed."

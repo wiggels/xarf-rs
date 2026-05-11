@@ -1,0 +1,62 @@
+---
+source: tests/snapshots.rs
+expression: report
+---
+{
+  "xarf_version": "4.0.0",
+  "report_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "timestamp": "2025-08-31T07:38:01Z",
+  "reporter": {
+    "org": "Example Security",
+    "contact": "abuse@example.com",
+    "domain": "example.com"
+  },
+  "sender": {
+    "org": "Example Security",
+    "contact": "abuse@example.com",
+    "domain": "example.com"
+  },
+  "source_identifier": "209.85.220.65",
+  "category": "messaging",
+  "type": "spam",
+  "source_port": 25,
+  "evidence_source": "user_complaint",
+  "evidence": [
+    {
+      "content_type": "message/rfc822",
+      "payload": "[base64-payload]",
+      "description": "Complete spam email reported by user",
+      "size": 12485
+    }
+  ],
+  "tags": [
+    "scam:advance_fee_fraud",
+    "scam:419",
+    "impersonation:religious",
+    "solicitation:financial",
+    "severity:medium"
+  ],
+  "description": "Advance fee fraud email (419 scam) impersonating religious figure, claiming inheritance offer of $20.5M USD",
+  "_internal": {
+    "source_system": "user_complaint_processor_v2.5",
+    "transmission_id": "manual_report_20240115_001",
+    "parser_confidence": 0.89,
+    "validation_score": 0.91,
+    "data_quality_flags": [
+      "user_verified",
+      "evidence_complete",
+      "manual_review_passed"
+    ],
+    "response_time_ms": 450,
+    "false_positive_probability": 0.08,
+    "review_required": true,
+    "custom": {
+      "complaint_id": "USER-2024-007891",
+      "user_report_method": "web_form",
+      "complaint_category": "419_advance_fee"
+    }
+  },
+  "protocol": "smtp",
+  "smtp_from": "uspisoffice0@gmail.com",
+  "subject": "Hello"
+}

@@ -1,0 +1,41 @@
+---
+source: tests/snapshots.rs
+expression: v4
+---
+{
+  "xarf_version": "4.2.0",
+  "report_id": "[uuid]",
+  "timestamp": "2024-01-15T14:30:25Z",
+  "reporter": {
+    "org": "Anti-Spam",
+    "contact": "abuse@antispam.example",
+    "domain": "antispam.example"
+  },
+  "sender": {
+    "org": "Anti-Spam",
+    "contact": "abuse@antispam.example",
+    "domain": "antispam.example"
+  },
+  "source_identifier": "192.0.2.1",
+  "category": "messaging",
+  "type": "spam",
+  "legacy_version": "3",
+  "_internal": {
+    "original_report_type": "Spam",
+    "converted_at": "[timestamp]"
+  },
+  "evidence_source": "spamtrap",
+  "evidence": [
+    {
+      "content_type": "message/rfc822",
+      "payload": "RnJvbTogc3BhbUBleGFtcGxlLmNvbQ==",
+      "hash": "sha256:fec893acd632087da802af62a448bdd64eef80c7212e8e2f564071546a276fbf",
+      "size": 22,
+      "description": "Spam email"
+    }
+  ],
+  "protocol": "smtp",
+  "smtp_from": "spam@example.com",
+  "subject": "buy our stuff",
+  "source_port": 25
+}

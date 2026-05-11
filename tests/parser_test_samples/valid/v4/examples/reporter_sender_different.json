@@ -1,0 +1,57 @@
+{
+	"xarf_version": "4.0.0",
+	"report_id": "x9y8z7w6-v5u4-3210-xy98-76543vw21098",
+	"timestamp": "2024-11-24T15:45:00Z",
+	"reporter": {
+		"org": "Abusix Network Intelligence",
+		"contact": "reports@abusix.com",
+		"domain": "abusix.com"
+	},
+	"sender": {
+		"org": "Regional Telecom Provider",
+		"contact": "abuse@regional-telecom.net",
+		"domain": "regional-telecom.net"
+	},
+	"source_identifier": "203.0.113.158",
+	"category": "messaging",
+	"type": "spam",
+	"evidence_source": "spamtrap",
+	"protocol": "smtp",
+	"smtp_from": "marketing@suspicious-domain.xyz",
+	"smtp_helo": "mail.suspicious-domain.xyz",
+	"source_port": 25,
+	"subject": "Special Offer - Limited Time Only!",
+	"message_id": "<20241124154200.ABC123@suspicious-domain.xyz>",
+	"spam_score": 9.2,
+	"authentication_results": {
+		"spf": "fail",
+		"dkim": "none",
+		"dmarc": "none"
+	},
+	"evidence": [
+		{
+			"content_type": "message/rfc822",
+			"description": "Complete spam email captured by spamtrap network",
+			"payload": "UmVjZWl2ZWQ6IGZyb20gbWFpbC5zdXNwaWNpb3VzLWRvbWFpbi54eXogKDIwMy4wLjExMy4xNTgpCkZyb206IG1hcmtldGluZ0BzdXNwaWNpb3VzLWRvbWFpbi54eXoKU3ViamVjdDogU3BlY2lhbCBPZmZlciAtIExpbWl0ZWQgVGltZSBPbmx5IQ==",
+			"hash": "sha256:1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890"
+		}
+	],
+	"tags": [
+		"spam:commercial",
+		"authentication:failed",
+		"bulk:high_volume",
+		"language:english"
+	],
+	"_internal": {
+		"source_system": "abusix_spamtrap_network_v4.1",
+		"transmission_id": "abusix_spam_20241124_x9y8z7w6",
+		"report_type": "third_party_service",
+		"customer_id": "regional_telecom_001",
+		"service_agreement": "managed_abuse_reporting",
+		"confidence_score": 0.95,
+		"spamtrap_hits": 47,
+		"campaign_id": "suspicious_marketing_nov2024",
+		"related_reports": 156,
+		"notes": "Third-party report - Abusix is reporting on behalf of their client Regional Telecom Provider. Abusix operates spamtrap infrastructure and provides managed abuse reporting services. The spam originated from Regional Telecom's network, but Abusix handles the abuse reporting process as a service."
+	}
+}

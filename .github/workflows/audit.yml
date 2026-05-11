@@ -1,0 +1,57 @@
+name: Audit
+
+# Scans the dependency tree for known security advisories from
+# https://rustsec.org/. Runs:
+#
+# * On every push that changes `Cargo.toml` / `Cargo.lock` (catches a new
+#   advisory landing the same day a dep is bumped).
+# * On every PR that changes the same files (catches advisories in the
+#   incoming changes before they merge).
+# * Daily at 06:00 UTC (catches newly-published advisories against deps the
+#   repo already has pinned).
+#
+# Failures here mean a transitive dep has a published vuln — bump it or
+# document an explicit `[advisories.ignore]` entry in `.cargo/audit.toml`
+# with a justification.
+
+on:
+  push:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - ".github/workflows/audit.yml"
+  pull_request:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - ".github/workflows/audit.yml"
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+  issues: write
+  checks: write
+
+jobs:
+  audit:
+    name: cargo-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          # `advisories` runs the same RustSec database that cargo-audit uses,
+          # `licenses` enforces the allowed-license policy in deny.toml,
+          # `bans` catches duplicate versions / banned crates,
+          # `sources` checks deps come from registries we trust.
+          command: check bans licenses sources advisories

@@ -1,0 +1,22 @@
+---
+source: tests/snapshots.rs
+expression: results
+---
+[
+  [
+    "sha256",
+    "sha256:06c2951cb0df4c25ff62e7ad30ca5034e64d1d7322fd79d76690ab840d0a68d8"
+  ],
+  [
+    "sha512",
+    "sha512:c7f8b9ab54dcac00398708c5d55c787e7e3137e918d313777fc932751a3914a3af016a5da0d3b27cea0e7e5b6fca39058f5f6b2c233f56185ee00cc1ab6484f6"
+  ],
+  [
+    "sha1",
+    "sha1:93e11956c18cb3f85b22ad9c67a50fa33f190c56"
+  ],
+  [
+    "md5",
+    "md5:7385d7b4d761af880f8e9b9017fdbf5a"
+  ]
+]

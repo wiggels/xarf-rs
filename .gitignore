@@ -1,0 +1,20 @@
+# Cargo build output.
+/target/
+
+# Cargo lockfile — keep for binaries, omit for libraries by convention.
+# We keep it because the perf budgets are wall-clock tests and dep version
+# drift would invalidate the headroom assumptions. Drop this line if/when
+# the crate is widely re-used as a library and the lockfile becomes noise.
+
+# Insta pending snapshots — these are intermediate review artifacts, not
+# committed. Once a contributor accepts a snapshot with `cargo insta review`,
+# the resulting `.snap` file IS committed but the `.new` siblings are not.
+*.snap.new
+*.pending-snap
+
+# IDE / editor scratch.
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store

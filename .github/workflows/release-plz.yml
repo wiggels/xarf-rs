@@ -1,0 +1,86 @@
+name: Release
+
+# release-plz automates the release flow:
+#
+# * On every push to `main`, release-plz analyses the commit history (using
+#   the Conventional Commits convention) and opens a "Release v0.x.y" PR
+#   that bumps `Cargo.toml`, appends to `CHANGELOG.md`, and updates the
+#   lockfile.
+#
+# * When the maintainer merges that PR, release-plz creates a git tag,
+#   publishes to crates.io, and creates a GitHub Release with the
+#   auto-generated notes.
+#
+# Two jobs are split out so they run independently and don't block each
+# other. See https://release-plz.dev for full docs.
+#
+# ## Set-up checklist (one-time, after first push)
+#
+# 1. Generate a crates.io API token (https://crates.io/me) and add it as a
+#    repo secret named `CARGO_REGISTRY_TOKEN`.
+# 2. Give the workflow permission to push to main and open PRs (Settings →
+#    Actions → General → Workflow permissions → Read and write).
+# 3. Either generate a fine-grained PAT with `contents:write` +
+#    `pull_requests:write` and add it as `RELEASE_PLZ_TOKEN`, or rely on
+#    `GITHUB_TOKEN` (works for opening PRs but cannot trigger other
+#    workflows on the merge — that means CI won't re-run on the auto-PR
+#    unless you push to it). The PAT route is recommended.
+
+on:
+  push:
+    branches: [main]
+
+# Stop concurrent runs from racing each other to open the release PR.
+concurrency:
+  group: release-plz-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Publish a tagged release to crates.io when the release PR is merged.
+  # ---------------------------------------------------------------------------
+  release-plz-release:
+    name: release-plz release
+    if: ${{ github.repository_owner == 'wiggels' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run release-plz
+        uses: release-plz/action@v0.5
+        with:
+          command: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # Open / update the next release PR. Idempotent — safe to re-run.
+  # ---------------------------------------------------------------------------
+  release-plz-pr:
+    name: release-plz PR
+    if: ${{ github.repository_owner == 'wiggels' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: release-plz-pr-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run release-plz
+        uses: release-plz/action@v0.5
+        with:
+          command: release-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

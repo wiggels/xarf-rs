@@ -1,0 +1,29 @@
+---
+source: tests/snapshots.rs
+expression: v4
+---
+{
+  "xarf_version": "4.2.0",
+  "report_id": "[uuid]",
+  "timestamp": "2024-01-15T14:30:25Z",
+  "reporter": {
+    "org": "Sec",
+    "contact": "abuse@sec.example",
+    "domain": "sec.example"
+  },
+  "sender": {
+    "org": "Sec",
+    "contact": "abuse@sec.example",
+    "domain": "sec.example"
+  },
+  "source_identifier": "https://phish.example/login",
+  "category": "content",
+  "type": "phishing",
+  "legacy_version": "3",
+  "_internal": {
+    "original_report_type": "Phishing",
+    "converted_at": "[timestamp]"
+  },
+  "evidence_source": "crawler",
+  "url": "https://phish.example/login"
+}

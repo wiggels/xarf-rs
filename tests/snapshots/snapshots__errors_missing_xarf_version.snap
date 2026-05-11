@@ -1,0 +1,10 @@
+---
+source: tests/snapshots.rs
+expression: "result.errors.iter().map(|e|\njson!({\"field\": e.field, \"message\": e.message})).collect::<Vec<_>>()"
+---
+[
+  {
+    "field": "",
+    "message": "\"xarf_version\" is a required property"
+  }
+]
