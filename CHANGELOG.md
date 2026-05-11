@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/wiggels/xarf-rs/compare/v0.1.1...v0.1.2) - 2026-05-11
+
+### Fixed
+
+- Bootstrap gh-pages
+- Remove windows ci job
+- Update github workflows
+
 ## [0.1.1](https://github.com/wiggels/xarf-rs/compare/v0.1.0...v0.1.1) - 2026-05-11
 
 ### Fixed
