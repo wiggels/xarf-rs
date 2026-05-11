@@ -14,9 +14,12 @@ cd xarf-rs
 cargo test
 ```
 
-The MSRV is **1.74**. CI verifies the crate still builds on that version,
-so don't reach for `let-else` features newer than that without bumping the
-MSRV (which is a breaking change for downstream consumers).
+The crate targets the **2024 edition** with an MSRV of **1.86**. The
+floor is driven by transitive deps (`icu_*` via `idna`); edition 2024
+itself only requires 1.85. CI verifies the crate still builds on 1.86,
+so don't reach for newer features — like let-chains (1.88) or
+`Cell::update` (1.88) — without bumping the MSRV (a breaking change for
+downstream consumers).
 
 ## Project layout
 

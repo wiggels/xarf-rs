@@ -1,8 +1,8 @@
 [package]
 name = "xarf-rs"
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.74"
+edition = "2024"
+rust-version = "1.86"
 description = "XARF v4 (eXtended Abuse Reporting Format) parser, validator, and generator with v3 compatibility"
 license = "MIT"
 repository = "https://github.com/wiggels/xarf-rs"

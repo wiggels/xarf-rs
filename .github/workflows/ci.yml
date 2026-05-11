@@ -52,13 +52,13 @@ jobs:
   # MSRV: keep the crate building on the version we advertise.
   # ---------------------------------------------------------------------------
   msrv:
-    name: MSRV (1.74)
+    name: MSRV (1.86)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.74"
+          toolchain: "1.86"
       - uses: Swatinem/rust-cache@v2
       # We only check `cargo build`, not `cargo test`, because dev-deps may
       # legitimately need a newer toolchain (e.g. tokio/insta versions). The

@@ -6,7 +6,7 @@
 [![Coverage](https://codecov.io/gh/wiggels/xarf-rs/branch/main/graph/badge.svg)](https://codecov.io/gh/wiggels/xarf-rs)
 [![Crates.io](https://img.shields.io/crates/v/xarf-rs.svg)](https://crates.io/crates/xarf-rs)
 [![Docs.rs](https://docs.rs/xarf-rs/badge.svg)](https://docs.rs/xarf-rs)
-[![MSRV](https://img.shields.io/badge/rustc-1.74+-blue.svg)](https://blog.rust-lang.org/2023/11/16/Rust-1.74.0.html)
+[![MSRV](https://img.shields.io/badge/rustc-1.86+-blue.svg)](https://blog.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A Rust implementation of [XARF v4](https://xarf.org/) — the eXtended Abuse

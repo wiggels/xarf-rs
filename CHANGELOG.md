@@ -29,8 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 33 criterion benchmarks across 7 groups (parse, validate, generate,
   create_evidence, v3, registry, round_trip).
 - CI workflows: test matrix (Linux/macOS/Windows × stable/beta), MSRV
-  (1.74), clippy, rustfmt, cargo-deny, cargo-audit, cargo-semver-checks,
-  release-plz, benchmark regression detection, llvm-cov coverage.
+  (1.86, edition 2024), clippy, rustfmt, cargo-deny, cargo-audit,
+  cargo-semver-checks, release-plz, benchmark regression detection,
+  llvm-cov coverage.
 
 [Unreleased]: https://github.com/wiggels/xarf-rs/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/wiggels/xarf-rs/releases/tag/v0.1.0
