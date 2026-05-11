@@ -4,10 +4,10 @@
 //! `xarf-javascript/src/v3-legacy.ts`. Conversion never mutates the input;
 //! it returns a fresh JSON `Value`.
 
-use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
+use base64::engine::general_purpose::STANDARD as BASE64;
 use chrono::SecondsFormat;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
@@ -89,22 +89,19 @@ pub fn convert_v3_to_v4(
         "xarf_version".into(),
         Value::String(SPEC_VERSION.to_string()),
     );
-    out.insert("report_id".into(), Value::String(Uuid::new_v4().to_string()));
+    out.insert(
+        "report_id".into(),
+        Value::String(Uuid::new_v4().to_string()),
+    );
     out.insert(
         "timestamp".into(),
-        report
-            .get("Date")
-            .cloned()
-            .unwrap_or(Value::String(
-                chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true),
-            )),
+        report.get("Date").cloned().unwrap_or(Value::String(
+            chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true),
+        )),
     );
     out.insert("reporter".into(), contact.clone());
     out.insert("sender".into(), contact);
-    out.insert(
-        "source_identifier".into(),
-        Value::String(source_identifier),
-    );
+    out.insert("source_identifier".into(), Value::String(source_identifier));
     out.insert("category".into(), Value::String(category.to_string()));
     out.insert("type".into(), Value::String(v4_type.to_string()));
     out.insert("legacy_version".into(), Value::String("3".to_string()));
@@ -128,10 +125,7 @@ pub fn convert_v3_to_v4(
         .and_then(|m| m.get("DetectionMethod"))
         .and_then(Value::as_str)
     {
-        out.insert(
-            "evidence_source".into(),
-            Value::String(method.to_string()),
-        );
+        out.insert("evidence_source".into(), Value::String(method.to_string()));
     }
 
     if let Some(ev) = evidence {
@@ -224,9 +218,8 @@ fn extract_contact_info(
     let org = match reporter_info.get("ReporterOrg").and_then(Value::as_str) {
         Some(s) if !s.is_empty() => s.to_string(),
         _ => {
-            warnings.push(
-                "No ReporterOrg found in v3 report, using \"Unknown Organization\"".into(),
-            );
+            warnings
+                .push("No ReporterOrg found in v3 report, using \"Unknown Organization\"".into());
             "Unknown Organization".to_string()
         }
     };
@@ -343,9 +336,12 @@ fn add_connection_fields(
     out: &mut Map<String, Value>,
     report: &Map<String, Value>,
 ) -> Result<(), XarfError> {
-    let protocol = report.get("Protocol").and_then(Value::as_str).ok_or_else(|| {
-        XarfError::V3Conversion("missing protocol for connection type".to_string())
-    })?;
+    let protocol = report
+        .get("Protocol")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            XarfError::V3Conversion("missing protocol for connection type".to_string())
+        })?;
     out.insert("protocol".into(), Value::String(protocol.to_string()));
     if let Some(date) = report.get("Date") {
         out.insert("first_seen".into(), date.clone());

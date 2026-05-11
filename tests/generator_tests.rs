@@ -1,11 +1,11 @@
 //! Unit tests for `xarf::generator` (ReportBuilder, create_evidence, etc.).
 
-use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
-use serde_json::{json, Map};
+use base64::engine::general_purpose::STANDARD as BASE64;
+use serde_json::{Map, json};
 use xarf::{
-    create_evidence, create_evidence_with_options, create_report, Contact,
-    CreateReportOptions, EvidenceOptions, HashAlgorithm, ReportBuilder, SPEC_VERSION,
+    Contact, CreateReportOptions, EvidenceOptions, HashAlgorithm, ReportBuilder, SPEC_VERSION,
+    create_evidence, create_evidence_with_options, create_report,
 };
 
 fn reporter() -> Contact {

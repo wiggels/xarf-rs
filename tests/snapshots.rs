@@ -11,11 +11,11 @@
 //! — the diff is the test.
 
 use insta::{assert_json_snapshot, assert_snapshot};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use xarf::{
+    Contact, EvidenceOptions, HashAlgorithm, ParseOptions, ReportBuilder, ValidateOptions,
     convert_v3_to_v4, create_evidence_with_options, parse, parse_value, parse_with_options,
-    validate, Contact, EvidenceOptions, HashAlgorithm, ParseOptions, ReportBuilder,
-    ValidateOptions,
+    validate,
 };
 
 // ---------------------------------------------------------------------------
@@ -159,7 +159,8 @@ fn snapshot_missing_xarf_version_errors() {
     let result = validate(&data, ValidateOptions::default()).unwrap();
     assert_json_snapshot!(
         "errors_missing_xarf_version",
-        result.errors
+        result
+            .errors
             .iter()
             .map(|e| json!({"field": e.field, "message": e.message}))
             .collect::<Vec<_>>()
@@ -181,7 +182,8 @@ fn snapshot_invalid_category_errors() {
     let result = validate(&data, ValidateOptions::default()).unwrap();
     assert_json_snapshot!(
         "errors_invalid_category",
-        result.errors
+        result
+            .errors
             .iter()
             .map(|e| json!({"field": e.field, "message": e.message}))
             .collect::<Vec<_>>()

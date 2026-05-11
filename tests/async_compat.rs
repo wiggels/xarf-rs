@@ -25,9 +25,9 @@
 use serde_json::json;
 use static_assertions::assert_impl_all;
 use xarf::{
-    parse, validate, Category, Contact, Evidence, ParseOptions, ParseResult, Report,
-    ReportBuilder, ValidateOptions, ValidationError, ValidationInfo, ValidationResult,
-    ValidationWarning, XarfError,
+    Category, Contact, Evidence, ParseOptions, ParseResult, Report, ReportBuilder, ValidateOptions,
+    ValidationError, ValidationInfo, ValidationResult, ValidationWarning, XarfError, parse,
+    validate,
 };
 
 // ---------------------------------------------------------------------------

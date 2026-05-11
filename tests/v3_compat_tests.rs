@@ -1,6 +1,6 @@
 //! Unit tests for `xarf::v3_compat`.
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use xarf::{convert_v3_to_v4, deprecation_warning, is_v3_report};
 
 fn v3_spam() -> Value {
@@ -232,10 +232,12 @@ fn pascal_and_lower_case_v3_types_both_mapped() {
 fn parse_round_trip_converts_v3() {
     let json = serde_json::to_string(&v3_spam()).unwrap();
     let result = xarf::parse(&json).unwrap();
-    assert!(result
-        .warnings
-        .iter()
-        .any(|w| w.message.to_lowercase().contains("v3")));
+    assert!(
+        result
+            .warnings
+            .iter()
+            .any(|w| w.message.to_lowercase().contains("v3"))
+    );
     let report = result.report.expect("report");
     assert_eq!(report.category.as_str(), "messaging");
     assert_eq!(report.type_, "spam");

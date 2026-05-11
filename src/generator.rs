@@ -1,17 +1,17 @@
 //! Report generator — `create_report` and `create_evidence`.
 
-use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
+use base64::engine::general_purpose::STANDARD as BASE64;
 use chrono::SecondsFormat;
 use md5::Md5;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
 use uuid::Uuid;
 
 use crate::error::{Result, ValidationError, ValidationInfo, ValidationWarning, XarfError};
 use crate::model::{Contact, Evidence, Report};
-use crate::parser::{parse_value, ParseOptions, ParseResult};
+use crate::parser::{ParseOptions, ParseResult, parse_value};
 
 /// The XARF specification version this crate targets.
 pub const SPEC_VERSION: &str = "4.2.0";
@@ -40,10 +40,7 @@ impl HashAlgorithm {
 /// Build an [`Evidence`] item from raw bytes:
 /// computes the requested hash, base64-encodes the payload, and records the
 /// pre-encoding size.
-pub fn create_evidence(
-    content_type: impl Into<String>,
-    payload: &[u8],
-) -> Evidence {
+pub fn create_evidence(content_type: impl Into<String>, payload: &[u8]) -> Evidence {
     create_evidence_with_options(content_type, payload, EvidenceOptions::default())
 }
 
@@ -222,24 +219,26 @@ impl ReportBuilder {
     /// Build and validate with explicit [`ParseOptions`]. In strict mode the
     /// result mirrors strict-mode parsing.
     pub fn build_with_options(self, options: ParseOptions) -> Result<ParseResult> {
-        let reporter = self
-            .reporter
-            .ok_or_else(|| XarfError::Validation(vec![ValidationError::new(
+        let reporter = self.reporter.ok_or_else(|| {
+            XarfError::Validation(vec![ValidationError::new(
                 "reporter",
                 "reporter contact is required",
-            )]))?;
-        let sender = self
-            .sender
-            .ok_or_else(|| XarfError::Validation(vec![ValidationError::new(
+            )])
+        })?;
+        let sender = self.sender.ok_or_else(|| {
+            XarfError::Validation(vec![ValidationError::new(
                 "sender",
                 "sender contact is required",
-            )]))?;
+            )])
+        })?;
 
         let timestamp = self
             .timestamp
             .unwrap_or_else(|| chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true));
         let report_id = self.report_id.unwrap_or_else(|| Uuid::new_v4().to_string());
-        let xarf_version = self.xarf_version.unwrap_or_else(|| SPEC_VERSION.to_string());
+        let xarf_version = self
+            .xarf_version
+            .unwrap_or_else(|| SPEC_VERSION.to_string());
 
         let mut data = Map::new();
         data.insert("xarf_version".into(), Value::String(xarf_version));
@@ -403,10 +402,4 @@ impl From<CreateReportOptions> for ParseOptions {
 }
 
 #[allow(dead_code)]
-fn _used(
-    _e: ValidationError,
-    _w: ValidationWarning,
-    _i: ValidationInfo,
-    _r: Report,
-) {
-}
+fn _used(_e: ValidationError, _w: ValidationWarning, _i: ValidationInfo, _r: Report) {}

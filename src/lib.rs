@@ -57,10 +57,10 @@ pub mod validator;
 
 pub use error::{Result, ValidationError, ValidationInfo, ValidationWarning, XarfError};
 pub use generator::{
-    create_evidence, create_evidence_with_options, create_report, CreateReportOptions,
-    EvidenceOptions, HashAlgorithm, ReportBuilder, SPEC_VERSION,
+    CreateReportOptions, EvidenceOptions, HashAlgorithm, ReportBuilder, SPEC_VERSION,
+    create_evidence, create_evidence_with_options, create_report,
 };
 pub use model::{Category, Contact, Evidence, Report};
-pub use parser::{parse, parse_value, parse_with_options, ParseOptions, ParseResult};
+pub use parser::{ParseOptions, ParseResult, parse, parse_value, parse_with_options};
 pub use v3_compat::{convert_v3_to_v4, deprecation_warning, is_v3_report};
-pub use validator::{validate, quick_errors, ValidateOptions, ValidationResult};
+pub use validator::{ValidateOptions, ValidationResult, quick_errors, validate};

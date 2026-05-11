@@ -289,9 +289,8 @@ impl SchemaRegistry {
 
 /// Process-wide schema registry built lazily on first access.
 pub fn registry() -> &'static SchemaRegistry {
-    static REGISTRY: Lazy<SchemaRegistry> = Lazy::new(|| {
-        SchemaRegistry::build().expect("bundled XARF schemas must parse")
-    });
+    static REGISTRY: Lazy<SchemaRegistry> =
+        Lazy::new(|| SchemaRegistry::build().expect("bundled XARF schemas must parse"));
     &REGISTRY
 }
 

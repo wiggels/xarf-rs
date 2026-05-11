@@ -1,6 +1,6 @@
 //! Unit tests for `xarf::model` (Contact, Evidence, Report, Category).
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use xarf::{Category, Contact, Evidence, Report};
 
 #[test]

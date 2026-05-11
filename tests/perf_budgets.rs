@@ -47,10 +47,10 @@
 
 use std::time::{Duration, Instant};
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use xarf::{
-    convert_v3_to_v4, create_evidence_with_options, is_v3_report, parse, validate, Contact,
-    EvidenceOptions, HashAlgorithm, ParseOptions, ReportBuilder, ValidateOptions,
+    Contact, EvidenceOptions, HashAlgorithm, ParseOptions, ReportBuilder, ValidateOptions,
+    convert_v3_to_v4, create_evidence_with_options, is_v3_report, parse, validate,
 };
 
 // ---------------------------------------------------------------------------
@@ -319,11 +319,7 @@ fn create_evidence_md5_64kib_under_10ms() {
         );
         std::hint::black_box(ev);
     });
-    assert_under_budget(
-        "create_evidence md5 64KiB",
-        avg,
-        Duration::from_millis(10),
-    );
+    assert_under_budget("create_evidence md5 64KiB", avg, Duration::from_millis(10));
 }
 
 // ---------------------------------------------------------------------------
@@ -388,9 +384,7 @@ fn meets_spec_throughput_target_of_1000_reports_per_second() {
     }
     let elapsed = start.elapsed();
     let rps = iters as f64 / elapsed.as_secs_f64();
-    eprintln!(
-        "[perf] throughput: {rps:.0} reports/s ({elapsed:.2?} for {iters} reports)"
-    );
+    eprintln!("[perf] throughput: {rps:.0} reports/s ({elapsed:.2?} for {iters} reports)");
     assert!(
         rps >= 1_000.0,
         "spec target is ≥1000 reports/s, observed {rps:.0}/s"

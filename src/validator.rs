@@ -227,11 +227,7 @@ fn try_get_base_schema(stem: &str) -> Option<Value> {
 /// Collect informational entries for every optional/recommended field that is
 /// absent from `data`. Order follows: core fields (alphabetic) then type
 /// fields (insertion order from the schema).
-fn collect_missing_optional(
-    data: &Value,
-    category: &str,
-    type_name: &str,
-) -> Vec<ValidationInfo> {
+fn collect_missing_optional(data: &Value, category: &str, type_name: &str) -> Vec<ValidationInfo> {
     let mut info: Vec<ValidationInfo> = Vec::new();
     let obj = match data {
         Value::Object(o) => o,
@@ -301,7 +297,11 @@ fn collect_type_optional_fields(
                 .map(String::from)
                 .unwrap_or_else(|| format!("Optional field: {k}"));
             let recommended = v.get("x-recommended") == Some(&Value::Bool(true));
-            let prefix = if recommended { "RECOMMENDED" } else { "OPTIONAL" };
+            let prefix = if recommended {
+                "RECOMMENDED"
+            } else {
+                "OPTIONAL"
+            };
             seen.insert(k.clone());
             out.push(ValidationInfo::new(
                 k.clone(),
@@ -319,13 +319,7 @@ fn collect_type_optional_fields(
                 // Only `content-base.json` exists today.
                 if href.contains("content-base.json") {
                     if let Some(base) = try_get_base_schema("content-base") {
-                        collect_type_optional_fields(
-                            &base,
-                            &effective_required,
-                            out,
-                            data,
-                            seen,
-                        );
+                        collect_type_optional_fields(&base, &effective_required, out, data, seen);
                     }
                 }
             } else {
@@ -350,7 +344,11 @@ fn core_field_metadata(name: &str) -> (&'static str, String) {
         .and_then(Value::as_str)
         .map(String::from)
         .unwrap_or(default_msg);
-    let prefix = if recommended { "RECOMMENDED" } else { "OPTIONAL" };
+    let prefix = if recommended {
+        "RECOMMENDED"
+    } else {
+        "OPTIONAL"
+    };
     (prefix, description)
 }
 

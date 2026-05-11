@@ -1,7 +1,7 @@
 //! Unit tests for `xarf::validator`.
 
 use serde_json::json;
-use xarf::{validate, ValidateOptions};
+use xarf::{ValidateOptions, validate};
 
 fn good_connection_ddos() -> serde_json::Value {
     json!({
@@ -42,10 +42,12 @@ fn missing_first_seen_fails_connection_ddos() {
     v.as_object_mut().unwrap().remove("first_seen");
     let result = validate(&v, ValidateOptions::default()).unwrap();
     assert!(!result.valid);
-    assert!(result
-        .errors
-        .iter()
-        .any(|e| e.message.contains("first_seen")));
+    assert!(
+        result
+            .errors
+            .iter()
+            .any(|e| e.message.contains("first_seen"))
+    );
 }
 
 #[test]
@@ -86,10 +88,12 @@ fn xarf_version_must_match_4_x_y_pattern() {
         .insert("xarf_version".into(), json!("3.0.0"));
     let result = validate(&v, ValidateOptions::default()).unwrap();
     assert!(!result.valid);
-    assert!(result
-        .errors
-        .iter()
-        .any(|e| e.message.to_lowercase().contains("4")));
+    assert!(
+        result
+            .errors
+            .iter()
+            .any(|e| e.message.to_lowercase().contains("4"))
+    );
 }
 
 #[test]
@@ -137,46 +141,74 @@ fn unknown_category_type_pair_fails_master_schema() {
 fn valid_for_every_category() {
     // Build a tiny valid sample for each category and assert it passes.
     let samples: Vec<(&str, &str, serde_json::Value)> = vec![
-        ("messaging", "spam", json!({
-            "category": "messaging",
-            "type": "spam",
-            "protocol": "smtp",
-            "smtp_from": "x@bad.example",
-            "source_port": 25,
-        })),
-        ("connection", "ddos", json!({
-            "category": "connection",
-            "type": "ddos",
-            "first_seen": "2024-01-15T14:15:00Z",
-            "protocol": "udp",
-            "source_port": 53,
-            "destination_ip": "192.0.2.42",
-        })),
-        ("content", "phishing", json!({
-            "category": "content",
-            "type": "phishing",
-            "url": "https://phish.example/login",
-        })),
-        ("copyright", "copyright", json!({
-            "category": "copyright",
-            "type": "copyright",
-            "infringing_url": "https://pirated.example/movie.mp4",
-        })),
-        ("vulnerability", "open_service", json!({
-            "category": "vulnerability",
-            "type": "open_service",
-            "service": "memcached",
-        })),
-        ("infrastructure", "botnet", json!({
-            "category": "infrastructure",
-            "type": "botnet",
-            "compromise_evidence": "C2 communication observed on 1.2.3.4",
-        })),
-        ("reputation", "blocklist", json!({
-            "category": "reputation",
-            "type": "blocklist",
-            "threat_type": "spam_source",
-        })),
+        (
+            "messaging",
+            "spam",
+            json!({
+                "category": "messaging",
+                "type": "spam",
+                "protocol": "smtp",
+                "smtp_from": "x@bad.example",
+                "source_port": 25,
+            }),
+        ),
+        (
+            "connection",
+            "ddos",
+            json!({
+                "category": "connection",
+                "type": "ddos",
+                "first_seen": "2024-01-15T14:15:00Z",
+                "protocol": "udp",
+                "source_port": 53,
+                "destination_ip": "192.0.2.42",
+            }),
+        ),
+        (
+            "content",
+            "phishing",
+            json!({
+                "category": "content",
+                "type": "phishing",
+                "url": "https://phish.example/login",
+            }),
+        ),
+        (
+            "copyright",
+            "copyright",
+            json!({
+                "category": "copyright",
+                "type": "copyright",
+                "infringing_url": "https://pirated.example/movie.mp4",
+            }),
+        ),
+        (
+            "vulnerability",
+            "open_service",
+            json!({
+                "category": "vulnerability",
+                "type": "open_service",
+                "service": "memcached",
+            }),
+        ),
+        (
+            "infrastructure",
+            "botnet",
+            json!({
+                "category": "infrastructure",
+                "type": "botnet",
+                "compromise_evidence": "C2 communication observed on 1.2.3.4",
+            }),
+        ),
+        (
+            "reputation",
+            "blocklist",
+            json!({
+                "category": "reputation",
+                "type": "blocklist",
+                "threat_type": "spam_source",
+            }),
+        ),
     ];
 
     for (category, type_name, extras) in samples {

@@ -64,8 +64,10 @@ fn validator_flags_known_shared_sample_violations() {
     let json = fs::read_to_string(path).expect("read sample");
     let result = xarf::parse(&json).expect("parse never panics");
     assert!(
-        result.errors.iter().any(|e| e.field == "evidence_source"
-            || e.message.contains("evidence_source")),
+        result
+            .errors
+            .iter()
+            .any(|e| e.field == "evidence_source" || e.message.contains("evidence_source")),
         "expected an evidence_source enum error, got: {:?}",
         result.errors
     );

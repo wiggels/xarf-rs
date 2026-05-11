@@ -1,7 +1,7 @@
 //! Unit tests for `xarf::parser`.
 
 use serde_json::json;
-use xarf::{parse, parse_value, parse_with_options, ParseOptions};
+use xarf::{ParseOptions, parse, parse_value, parse_with_options};
 
 /// A minimum-viable messaging/spam report — passes the schema's
 /// conditional rule that `smtp_from` and `source_port` are required when
@@ -70,10 +70,12 @@ fn missing_xarf_version_surfaces_error() {
     let mut data = minimal_spam();
     data.as_object_mut().unwrap().remove("xarf_version");
     let result = parse_value(data, ParseOptions::default()).expect("ok");
-    assert!(result
-        .errors
-        .iter()
-        .any(|e| e.message.contains("xarf_version")));
+    assert!(
+        result
+            .errors
+            .iter()
+            .any(|e| e.message.contains("xarf_version"))
+    );
 }
 
 #[test]
@@ -103,18 +105,12 @@ fn unknown_field_warning_in_normal_mode() {
         .insert("totally_made_up".into(), json!("hi"));
     let result = parse_value(data, ParseOptions::default()).expect("ok");
     assert!(
-        result
-            .warnings
-            .iter()
-            .any(|w| w.field == "totally_made_up"),
+        result.warnings.iter().any(|w| w.field == "totally_made_up"),
         "expected an unknown-field warning, got: {:?}",
         result.warnings
     );
     // Should not be in errors in non-strict mode.
-    assert!(!result
-        .errors
-        .iter()
-        .any(|e| e.field == "totally_made_up"));
+    assert!(!result.errors.iter().any(|e| e.field == "totally_made_up"));
 }
 
 #[test]
@@ -189,10 +185,7 @@ fn report_round_trips_through_serde() {
     assert_eq!(re_serialised.get("source_identifier").unwrap(), "192.0.2.1");
     // Category-specific fields landed in `extra` and re-emit at the top level.
     assert_eq!(re_serialised.get("protocol").unwrap(), "smtp");
-    assert_eq!(
-        re_serialised.get("smtp_from").unwrap(),
-        "spam@bad.example"
-    );
+    assert_eq!(re_serialised.get("smtp_from").unwrap(), "spam@bad.example");
 }
 
 #[test]
@@ -288,10 +281,7 @@ fn extra_fields_preserved_across_parse() {
         .unwrap()
         .report
         .unwrap();
-    assert_eq!(
-        report.extra.get("subject").unwrap(),
-        &json!("Cheap meds!")
-    );
+    assert_eq!(report.extra.get("subject").unwrap(), &json!("Cheap meds!"));
     assert_eq!(
         report.extra.get("smtp_to").unwrap(),
         &json!("victim@example.org")

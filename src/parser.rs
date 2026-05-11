@@ -15,7 +15,7 @@ use serde_json::Value;
 use crate::error::{Result, ValidationError, ValidationInfo, ValidationWarning, XarfError};
 use crate::model::Report;
 use crate::v3_compat;
-use crate::validator::{validate, ValidateOptions};
+use crate::validator::{ValidateOptions, validate};
 
 /// Outcome of [`parse`] / [`parse_value`].
 ///
@@ -61,8 +61,8 @@ pub fn parse(json: &str) -> Result<ParseResult> {
 
 /// Parse a XARF report from a JSON string with explicit [`ParseOptions`].
 pub fn parse_with_options(json: &str, options: ParseOptions) -> Result<ParseResult> {
-    let value: Value = serde_json::from_str(json)
-        .map_err(|e| XarfError::InvalidJson(format!("{e}")))?;
+    let value: Value =
+        serde_json::from_str(json).map_err(|e| XarfError::InvalidJson(format!("{e}")))?;
     if !value.is_object() {
         return Err(XarfError::InvalidJson(format!(
             "expected a JSON object, got {}",
@@ -84,10 +84,7 @@ pub fn parse_value(mut value: Value, options: ParseOptions) -> Result<ParseResul
         match v3_compat::convert_v3_to_v4(value.clone(), &mut conversion_msgs) {
             Ok(converted) => {
                 value = converted;
-                warnings.push(ValidationWarning::new(
-                    "",
-                    v3_compat::deprecation_warning(),
-                ));
+                warnings.push(ValidationWarning::new("", v3_compat::deprecation_warning()));
                 for msg in conversion_msgs {
                     warnings.push(ValidationWarning::new("", msg));
                 }

@@ -3,8 +3,8 @@
 
 use std::fs;
 
-use serde_json::{json, Value};
-use xarf::{parse, ReportBuilder};
+use serde_json::{Value, json};
+use xarf::{ReportBuilder, parse};
 
 #[test]
 fn round_trip_through_every_spec_sample() {
@@ -113,10 +113,7 @@ fn unknown_extension_fields_survive_round_trip() {
         .report
         .unwrap();
     let serialised = serde_json::to_value(&report).unwrap();
-    assert_eq!(
-        serialised["future_field_v5"],
-        json!({"nested": [1, 2, 3]})
-    );
+    assert_eq!(serialised["future_field_v5"], json!({"nested": [1, 2, 3]}));
 }
 
 #[test]

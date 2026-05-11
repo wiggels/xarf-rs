@@ -22,14 +22,12 @@
 use std::hint::black_box;
 use std::time::Duration;
 
-use criterion::{
-    criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput,
-};
-use serde_json::{json, Value};
+use criterion::{BatchSize, BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+use serde_json::{Value, json};
 use xarf::{
+    Contact, EvidenceOptions, HashAlgorithm, ParseOptions, ReportBuilder, ValidateOptions,
     convert_v3_to_v4, create_evidence_with_options, is_v3_report, parse, parse_value,
-    parse_with_options, validate, Contact, EvidenceOptions, HashAlgorithm, ParseOptions,
-    ReportBuilder, ValidateOptions,
+    parse_with_options, validate,
 };
 
 // ---------------------------------------------------------------------------
