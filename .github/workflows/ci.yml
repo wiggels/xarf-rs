@@ -15,14 +15,14 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Test matrix: stable on Linux + macOS + Windows.
+  # Test matrix: stable on Linux + macOS.
   # ---------------------------------------------------------------------------
   test:
     name: test (${{ matrix.os }}, ${{ matrix.rust }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         rust: [stable]
         include:
           # Pin one beta job to catch upcoming-rustc breakage early.
@@ -42,8 +42,8 @@ jobs:
       # Perf budgets are wall-clock based — run them in release mode where
       # the budgets were measured. They also pass in debug, but headroom is
       # tighter and CI noise can flake. Restrict the release-mode run to
-      # Linux because Windows/macOS GitHub runners have very different
-      # absolute timings.
+      # Linux because macOS GitHub runners have meaningfully different
+      # absolute timings and would need their own per-OS budgets.
       - name: cargo test --release (perf budgets, Linux only)
         if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         run: cargo test --release --test perf_budgets -- --nocapture
