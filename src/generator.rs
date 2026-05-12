@@ -9,8 +9,8 @@ use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
 use uuid::Uuid;
 
-use crate::error::{Result, ValidationError, ValidationInfo, ValidationWarning, XarfError};
-use crate::model::{Contact, Evidence, Report};
+use crate::error::{Result, ValidationError, XarfError};
+use crate::model::{Contact, Evidence};
 use crate::parser::{ParseOptions, ParseResult, parse_value};
 
 /// The XARF specification version this crate targets.
@@ -59,10 +59,10 @@ pub fn create_evidence_with_options(
     options: EvidenceOptions,
 ) -> Evidence {
     let hex_digest = match options.hash_algorithm {
-        HashAlgorithm::Sha256 => hex(Sha256::digest(payload).as_slice()),
-        HashAlgorithm::Sha512 => hex(Sha512::digest(payload).as_slice()),
-        HashAlgorithm::Sha1 => hex(Sha1::digest(payload).as_slice()),
-        HashAlgorithm::Md5 => hex(Md5::digest(payload).as_slice()),
+        HashAlgorithm::Sha256 => crate::hex::encode(Sha256::digest(payload).as_slice()),
+        HashAlgorithm::Sha512 => crate::hex::encode(Sha512::digest(payload).as_slice()),
+        HashAlgorithm::Sha1 => crate::hex::encode(Sha1::digest(payload).as_slice()),
+        HashAlgorithm::Md5 => crate::hex::encode(Md5::digest(payload).as_slice()),
     };
     let hash = format!("{}:{hex_digest}", options.hash_algorithm.prefix());
     let encoded = BASE64.encode(payload);
@@ -75,15 +75,7 @@ pub fn create_evidence_with_options(
     }
 }
 
-fn hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{b:02x}"));
-    }
-    s
-}
-
-/// Builder for [`Report`] objects.
+/// Builder for [`crate::model::Report`] objects.
 ///
 /// Pattern:
 ///
@@ -400,6 +392,3 @@ impl From<CreateReportOptions> for ParseOptions {
         }
     }
 }
-
-#[allow(dead_code)]
-fn _used(_e: ValidationError, _w: ValidationWarning, _i: ValidationInfo, _r: Report) {}

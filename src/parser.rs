@@ -81,19 +81,13 @@ pub fn parse_value(mut value: Value, options: ParseOptions) -> Result<ParseResul
     // ------------------------------------------------------------------
     if v3_compat::is_v3_report(&value) {
         let mut conversion_msgs: Vec<String> = Vec::new();
-        match v3_compat::convert_v3_to_v4(value.clone(), &mut conversion_msgs) {
-            Ok(converted) => {
-                value = converted;
-                warnings.push(ValidationWarning::new("", v3_compat::deprecation_warning()));
-                for msg in conversion_msgs {
-                    warnings.push(ValidationWarning::new("", msg));
-                }
-            }
-            Err(err) => {
-                // Conversion failed irrecoverably — surface as a fatal error.
-                return Err(err);
-            }
-        }
+        value = v3_compat::convert_v3_to_v4(value, &mut conversion_msgs)?;
+        warnings.push(ValidationWarning::new("", v3_compat::deprecation_warning()));
+        warnings.extend(
+            conversion_msgs
+                .into_iter()
+                .map(|m| ValidationWarning::new("", m)),
+        );
     }
 
     // ------------------------------------------------------------------

@@ -4,6 +4,8 @@
 //! `xarf-javascript/src/v3-legacy.ts`. Conversion never mutates the input;
 //! it returns a fresh JSON `Value`.
 
+use std::sync::LazyLock;
+
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64;
 use chrono::SecondsFormat;
@@ -15,12 +17,11 @@ use crate::error::XarfError;
 use crate::generator::SPEC_VERSION;
 
 /// The canonical deprecation message attached to every v3 → v4 conversion.
-pub fn deprecation_warning() -> String {
+pub fn deprecation_warning() -> &'static str {
     "DEPRECATION WARNING: XARF v3 format detected. \
      The v3 format has been automatically converted to v4. \
      Please update your systems to generate v4 reports directly. \
      v3 support will be removed in a future major version."
-        .to_string()
 }
 
 /// Heuristic from the JS/Python reference implementations: a top-level
@@ -52,16 +53,15 @@ pub fn convert_v3_to_v4(
         ));
     };
 
+    static EMPTY: LazyLock<Map<String, Value>> = LazyLock::new(Map::new);
     let report = top
         .get("Report")
         .and_then(Value::as_object)
-        .cloned()
-        .unwrap_or_default();
+        .unwrap_or(&EMPTY);
     let reporter_info = top
         .get("ReporterInfo")
         .and_then(Value::as_object)
-        .cloned()
-        .unwrap_or_default();
+        .unwrap_or(&EMPTY);
 
     let report_type = report
         .get("ReportType")
@@ -80,9 +80,11 @@ pub fn convert_v3_to_v4(
         ))
     })?;
 
-    let source_identifier = extract_source_identifier(&report)?;
-    let contact = extract_contact_info(&reporter_info, conversion_warnings)?;
-    let evidence = convert_attachments(&report, conversion_warnings);
+    let source_identifier = extract_source_identifier(report)?;
+    let contact = extract_contact_info(reporter_info, conversion_warnings)?;
+    let evidence = convert_attachments(report, conversion_warnings);
+
+    let now_rfc3339 = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true);
 
     let mut out = Map::new();
     out.insert(
@@ -95,9 +97,10 @@ pub fn convert_v3_to_v4(
     );
     out.insert(
         "timestamp".into(),
-        report.get("Date").cloned().unwrap_or(Value::String(
-            chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true),
-        )),
+        report
+            .get("Date")
+            .cloned()
+            .unwrap_or_else(|| Value::String(now_rfc3339.clone())),
     );
     out.insert("reporter".into(), contact.clone());
     out.insert("sender".into(), contact);
@@ -108,10 +111,7 @@ pub fn convert_v3_to_v4(
 
     let mut internal = Map::new();
     internal.insert("original_report_type".into(), Value::String(report_type));
-    internal.insert(
-        "converted_at".into(),
-        Value::String(chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)),
-    );
+    internal.insert("converted_at".into(), Value::String(now_rfc3339));
     out.insert("_internal".into(), Value::Object(internal));
 
     if let Some(desc) = report.get("AttackDescription").and_then(Value::as_str) {
@@ -133,9 +133,9 @@ pub fn convert_v3_to_v4(
     }
 
     match category {
-        "messaging" => add_messaging_fields(&mut out, &report)?,
-        "connection" => add_connection_fields(&mut out, &report)?,
-        "content" => add_content_fields(&mut out, &report)?,
+        "messaging" => add_messaging_fields(&mut out, report)?,
+        "connection" => add_connection_fields(&mut out, report)?,
+        "content" => add_content_fields(&mut out, report)?,
         _ => {}
     }
 
@@ -169,20 +169,13 @@ fn map_v3_type(t: &str) -> Option<(&'static str, &'static str)> {
 }
 
 fn extract_source_identifier(report: &Map<String, Value>) -> Result<String, XarfError> {
-    if let Some(source) = report.get("Source").and_then(Value::as_object) {
-        if let Some(ip) = source.get("IP").and_then(Value::as_str) {
-            return Ok(ip.to_string());
-        }
-    }
-    if let Some(ip) = report.get("SourceIp").and_then(Value::as_str) {
+    let source = report.get("Source").and_then(Value::as_object);
+    let from_source = |k: &str| source.and_then(|s| s.get(k)).and_then(Value::as_str);
+
+    if let Some(ip) = from_source("IP").or_else(|| report.get("SourceIp").and_then(Value::as_str)) {
         return Ok(ip.to_string());
     }
-    if let Some(source) = report.get("Source").and_then(Value::as_object) {
-        if let Some(url) = source.get("URL").and_then(Value::as_str) {
-            return Ok(url.to_string());
-        }
-    }
-    if let Some(url) = report.get("Url").and_then(Value::as_str) {
+    if let Some(url) = from_source("URL").or_else(|| report.get("Url").and_then(Value::as_str)) {
         return Ok(url.to_string());
     }
     Err(XarfError::V3Conversion(
@@ -254,7 +247,7 @@ fn convert_attachments(
         let raw_b64 = att.get("Data").and_then(Value::as_str).unwrap_or("");
         let raw_bytes = BASE64.decode(raw_b64).unwrap_or_default();
         let digest = Sha256::digest(&raw_bytes);
-        let hash = format!("sha256:{}", hex(&digest));
+        let hash = format!("sha256:{}", crate::hex::encode(&digest));
 
         let content_type = att
             .get("ContentType")
@@ -278,27 +271,17 @@ fn convert_attachments(
     Some(out)
 }
 
-fn hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{b:02x}"));
-    }
-    s
-}
-
 fn add_messaging_fields(
     out: &mut Map<String, Value>,
     report: &Map<String, Value>,
 ) -> Result<(), XarfError> {
-    let additional = report
-        .get("AdditionalInfo")
-        .and_then(Value::as_object)
-        .cloned()
-        .unwrap_or_default();
+    let additional = report.get("AdditionalInfo").and_then(Value::as_object);
+    let from_additional = |k: &str| additional.and_then(|a| a.get(k)).and_then(Value::as_str);
+
     let protocol = report
         .get("Protocol")
         .and_then(Value::as_str)
-        .or_else(|| additional.get("Protocol").and_then(Value::as_str))
+        .or_else(|| from_additional("Protocol"))
         .ok_or_else(|| {
             XarfError::V3Conversion("missing protocol for messaging type".to_string())
         })?;
@@ -307,7 +290,7 @@ fn add_messaging_fields(
     if let Some(s) = report
         .get("SmtpMailFromAddress")
         .and_then(Value::as_str)
-        .or_else(|| additional.get("SMTPFrom").and_then(Value::as_str))
+        .or_else(|| from_additional("SMTPFrom"))
     {
         out.insert("smtp_from".into(), Value::String(s.to_string()));
     }
@@ -317,7 +300,7 @@ fn add_messaging_fields(
     if let Some(s) = report
         .get("SmtpMessageSubject")
         .and_then(Value::as_str)
-        .or_else(|| additional.get("Subject").and_then(Value::as_str))
+        .or_else(|| from_additional("Subject"))
     {
         out.insert("subject".into(), Value::String(s.to_string()));
     }
@@ -370,21 +353,17 @@ fn add_content_fields(
     out: &mut Map<String, Value>,
     report: &Map<String, Value>,
 ) -> Result<(), XarfError> {
-    let additional = report
-        .get("AdditionalInfo")
-        .and_then(Value::as_object)
-        .cloned()
-        .unwrap_or_default();
-    let source = report
-        .get("Source")
-        .and_then(Value::as_object)
-        .cloned()
-        .unwrap_or_default();
+    let additional = report.get("AdditionalInfo").and_then(Value::as_object);
+    let source = report.get("Source").and_then(Value::as_object);
     let url = report
         .get("Url")
         .and_then(Value::as_str)
-        .or_else(|| additional.get("URL").and_then(Value::as_str))
-        .or_else(|| source.get("URL").and_then(Value::as_str))
+        .or_else(|| {
+            additional
+                .and_then(|a| a.get("URL"))
+                .and_then(Value::as_str)
+        })
+        .or_else(|| source.and_then(|s| s.get("URL")).and_then(Value::as_str))
         .ok_or_else(|| {
             XarfError::V3Conversion(format!(
                 "missing URL for content type '{}'. Content reports require a URL field",
