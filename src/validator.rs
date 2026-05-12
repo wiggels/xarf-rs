@@ -15,7 +15,7 @@ use std::collections::BTreeSet;
 
 use serde_json::Value;
 
-use crate::error::{Result, ValidationError, ValidationInfo, ValidationWarning, XarfError};
+use crate::error::{Result, ValidationError, ValidationInfo, ValidationWarning};
 use crate::schemas::registry;
 
 /// Outcome of [`validate`]. `valid` is `true` iff `errors` is empty.
@@ -193,6 +193,3 @@ pub fn quick_errors(data: &Value, strict: bool) -> Result<Vec<ValidationError>> 
     )?
     .errors)
 }
-
-#[allow(dead_code)]
-fn _used(_x: XarfError) {}

@@ -40,7 +40,7 @@
 //!   entry points.
 //! - [`v3_compat`] — automatic XARF v3 → v4 conversion.
 
-#![doc(html_root_url = "https://docs.rs/xarf-rs/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/xarf-rs/0.1.2")]
 #![warn(missing_debug_implementations)]
 
 pub mod error;

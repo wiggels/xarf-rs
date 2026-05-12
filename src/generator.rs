@@ -9,8 +9,8 @@ use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
 use uuid::Uuid;
 
-use crate::error::{Result, ValidationError, ValidationInfo, ValidationWarning, XarfError};
-use crate::model::{Contact, Evidence, Report};
+use crate::error::{Result, ValidationError, XarfError};
+use crate::model::{Contact, Evidence};
 use crate::parser::{ParseOptions, ParseResult, parse_value};
 
 /// The XARF specification version this crate targets.
@@ -392,6 +392,3 @@ impl From<CreateReportOptions> for ParseOptions {
         }
     }
 }
-
-#[allow(dead_code)]
-fn _used(_e: ValidationError, _w: ValidationWarning, _i: ValidationInfo, _r: Report) {}
