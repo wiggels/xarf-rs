@@ -6,10 +6,9 @@
 //! `jsonschema::Validator` instances keyed by `category/type`.
 
 use std::collections::HashMap;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, LazyLock, OnceLock};
 
 use jsonschema::{Retrieve, Uri, Validator};
-use once_cell::sync::Lazy;
 use serde_json::Value;
 
 use crate::error::XarfError;
@@ -378,8 +377,8 @@ impl SchemaRegistry {
 
 /// Process-wide schema registry built lazily on first access.
 pub fn registry() -> &'static SchemaRegistry {
-    static REGISTRY: Lazy<SchemaRegistry> =
-        Lazy::new(|| SchemaRegistry::build().expect("bundled XARF schemas must parse"));
+    static REGISTRY: LazyLock<SchemaRegistry> =
+        LazyLock::new(|| SchemaRegistry::build().expect("bundled XARF schemas must parse"));
     &REGISTRY
 }
 
