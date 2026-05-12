@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778549570746,
+  "lastUpdate": 1778553935848,
   "repoUrl": "https://github.com/wiggels/xarf-rs",
   "entries": {
     "Benchmark": [
@@ -935,6 +935,240 @@ window.BENCHMARK_DATA = {
             "name": "round_trip/parse_then_serialize_large",
             "value": 84527,
             "range": "± 364",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hwigelsworth@vultr.com",
+            "name": "Hunter Wigelsworth",
+            "username": "wiggels"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3b441320dc4a1a6e2d7be96a38d51d88d5df4036",
+          "message": "Merge pull request #7 from wiggels/perf/hot-path-improvements",
+          "timestamp": "2026-05-11T22:38:56-04:00",
+          "tree_id": "31c41592d6fc559ec7fd8182d720cc5124639e7d",
+          "url": "https://github.com/wiggels/xarf-rs/commit/3b441320dc4a1a6e2d7be96a38d51d88d5df4036"
+        },
+        "date": 1778553934995,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "parse/small_spam_str",
+            "value": 18195,
+            "range": "± 104",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/ddos_str",
+            "value": 16178,
+            "range": "± 298",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/large_spam_str",
+            "value": 50303,
+            "range": "± 310",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/small_spam_prevalued",
+            "value": 14758,
+            "range": "± 3920",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/small_spam_strict",
+            "value": 20325,
+            "range": "± 111",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/small_spam_show_missing",
+            "value": 20432,
+            "range": "± 192",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "validate/small_spam_normal",
+            "value": 11902,
+            "range": "± 141",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "validate/small_spam_strict",
+            "value": 14663,
+            "range": "± 166",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "validate/ddos_normal",
+            "value": 9971,
+            "range": "± 59",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "generate/minimal_spam_build",
+            "value": 12505,
+            "range": "± 214",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "generate/spam_build_with_evidence",
+            "value": 15834,
+            "range": "± 99",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/256",
+            "value": 625,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/256",
+            "value": 1269,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/256",
+            "value": 577,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/256",
+            "value": 947,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/4096",
+            "value": 5208,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/4096",
+            "value": 10645,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/4096",
+            "value": 5014,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/4096",
+            "value": 9940,
+            "range": "± 197",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/65536",
+            "value": 78487,
+            "range": "± 243",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/65536",
+            "value": 159595,
+            "range": "± 626",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/65536",
+            "value": 75799,
+            "range": "± 186",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/65536",
+            "value": 153983,
+            "range": "± 339",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/1048576",
+            "value": 1267211,
+            "range": "± 7941",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/1048576",
+            "value": 2564541,
+            "range": "± 59952",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/1048576",
+            "value": 1225821,
+            "range": "± 13738",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/1048576",
+            "value": 2469468,
+            "range": "± 3910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v3/is_v3_report",
+            "value": 74,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v3/convert_v3_to_v4",
+            "value": 6118,
+            "range": "± 420",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v3/parse_v3_full_pipeline",
+            "value": 23376,
+            "range": "± 105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "registry/known_combination_hit",
+            "value": 46,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "registry/known_combination_miss",
+            "value": 55,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "registry/compile_master_validator",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "round_trip/parse_then_serialize_small",
+            "value": 19280,
+            "range": "± 119",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "round_trip/parse_then_serialize_large",
+            "value": 80587,
+            "range": "± 642",
             "unit": "ns/iter"
           }
         ]
