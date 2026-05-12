@@ -75,7 +75,7 @@ pub fn create_evidence_with_options(
     }
 }
 
-/// Builder for [`Report`] objects.
+/// Builder for [`crate::model::Report`] objects.
 ///
 /// Pattern:
 ///

@@ -358,7 +358,11 @@ fn add_content_fields(
     let url = report
         .get("Url")
         .and_then(Value::as_str)
-        .or_else(|| additional.and_then(|a| a.get("URL")).and_then(Value::as_str))
+        .or_else(|| {
+            additional
+                .and_then(|a| a.get("URL"))
+                .and_then(Value::as_str)
+        })
         .or_else(|| source.and_then(|s| s.get("URL")).and_then(Value::as_str))
         .ok_or_else(|| {
             XarfError::V3Conversion(format!(

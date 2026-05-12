@@ -183,7 +183,11 @@ impl SchemaRegistry {
         let core_required: Box<[String]> = core_schema
             .get("required")
             .and_then(Value::as_array)
-            .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+            .map(|a| {
+                a.iter()
+                    .filter_map(|v| v.as_str().map(String::from))
+                    .collect()
+            })
             .unwrap_or_default();
         let core_optional = build_core_optional(&core_schema, &core_required);
 
@@ -558,13 +562,7 @@ fn build_optional_fields(schema: &Value, content_base: &Value) -> Box<[FieldMeta
     use std::collections::BTreeSet;
     let mut out: Vec<FieldMeta> = Vec::new();
     let mut seen: BTreeSet<String> = BTreeSet::new();
-    collect_type_optional(
-        schema,
-        content_base,
-        &BTreeSet::new(),
-        &mut out,
-        &mut seen,
-    );
+    collect_type_optional(schema, content_base, &BTreeSet::new(), &mut out, &mut seen);
     out.into_boxed_slice()
 }
 
@@ -591,7 +589,7 @@ fn collect_type_optional(
 
     if let Some(Value::Object(props)) = schema.get("properties") {
         for (k, v) in props {
-            if core.contains(k.as_str()) || SKIP.iter().any(|s| *s == k.as_str()) {
+            if core.contains(k.as_str()) || SKIP.contains(&k.as_str()) {
                 continue;
             }
             if required.contains(k) || !seen.insert(k.clone()) {
