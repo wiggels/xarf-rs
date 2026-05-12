@@ -37,12 +37,16 @@ jobs:
         # `--all-features` exercises every feature flag — currently a no-op
         # since we have no features, but future-proof.
         # `--lcov` emits a format Codecov understands.
-        # Skip the perf budget tests because they need release mode to hit
-        # their thresholds and coverage runs are debug-only.
+        # `--ignore-filename-regex` hides perf_budgets.rs from the report; the
+        # `--skip` args below also prevent its tests from *running*, since
+        # they assert wall-clock budgets that llvm-cov's instrumentation
+        # overhead can blow on shared runners. Every perf_budgets test name
+        # contains `_under_` or `_target_`; no other test uses those tokens.
         run: |
           cargo llvm-cov --workspace --all-features --locked \
             --ignore-filename-regex 'tests/perf_budgets\.rs' \
-            --lcov --output-path lcov.info
+            --lcov --output-path lcov.info \
+            -- --skip _under_ --skip _target_
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
