@@ -117,6 +117,15 @@ impl Retrieve for StaticRetriever {
     }
 }
 
+/// One row in the type-schema table. Stored in a slice sorted by
+/// `(category, type_name)` so lookups are a zero-alloc binary search.
+#[derive(Debug)]
+struct TypeSchemaEntry {
+    category: &'static str,
+    type_name: &'static str,
+    parsed: Value,
+}
+
 /// Parsed schema bodies indexed by `category/type` and by URI. Cheap to clone
 /// (it's behind an `Arc`); compilation is on-demand so we only pay for what we
 /// actually validate against.
@@ -125,7 +134,7 @@ pub struct SchemaRegistry {
     core_schema: Value,
     master_schema: Value,
     master_schema_strict: Value,
-    type_schemas: HashMap<(String, String), Value>,
+    type_schemas: Box<[TypeSchemaEntry]>,
     retriever: StaticRetriever,
     retriever_strict: StaticRetriever,
     /// Cached compiled master validator (normal mode). Compiled lazily on
@@ -146,7 +155,7 @@ impl SchemaRegistry {
         let content_base: Value = serde_json::from_str(CONTENT_BASE_JSON)
             .map_err(|e| XarfError::Schema(format!("content-base parse: {e}")))?;
 
-        let mut type_schemas = HashMap::new();
+        let mut type_schemas: Vec<TypeSchemaEntry> = Vec::with_capacity(TYPE_SCHEMA_SOURCES.len());
         let mut documents = HashMap::new();
         documents.insert(CORE_SCHEMA_URI.to_string(), core_schema.clone());
         documents.insert(MASTER_SCHEMA_URI.to_string(), master_schema.clone());
@@ -159,8 +168,14 @@ impl SchemaRegistry {
                 ))
             })?;
             documents.insert(uri.to_string(), parsed.clone());
-            type_schemas.insert(((*category).to_string(), (*type_name).to_string()), parsed);
+            type_schemas.push(TypeSchemaEntry {
+                category,
+                type_name,
+                parsed,
+            });
         }
+        type_schemas.sort_by(|a, b| (a.category, a.type_name).cmp(&(b.category, b.type_name)));
+        let type_schemas = type_schemas.into_boxed_slice();
 
         // Build strict variants: deep-copy each document and promote any
         // `x-recommended: true` property into its parent `required` array.
@@ -208,8 +223,14 @@ impl SchemaRegistry {
 
     /// Return the (parsed) type schema for `(category, type)`, if any.
     pub fn type_schema(&self, category: &str, type_name: &str) -> Option<&Value> {
+        self.find_entry(category, type_name).map(|e| &e.parsed)
+    }
+
+    fn find_entry(&self, category: &str, type_name: &str) -> Option<&TypeSchemaEntry> {
         self.type_schemas
-            .get(&(category.to_string(), type_name.to_string()))
+            .binary_search_by(|e| (e.category, e.type_name).cmp(&(category, type_name)))
+            .ok()
+            .map(|i| &self.type_schemas[i])
     }
 
     /// Borrow the (lazily-compiled, then cached) master validator. The first
@@ -273,17 +294,14 @@ impl SchemaRegistry {
             .map_err(|e| XarfError::Schema(format!("schema compile: {e}")))
     }
 
-    /// All `(category, type)` combinations supported by the spec.
-    pub fn known_combinations(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.type_schemas
-            .keys()
-            .map(|(c, t)| (c.as_str(), t.as_str()))
+    /// All `(category, type)` combinations supported by the spec, sorted.
+    pub fn known_combinations(&self) -> impl Iterator<Item = (&'static str, &'static str)> + '_ {
+        self.type_schemas.iter().map(|e| (e.category, e.type_name))
     }
 
     /// Returns `true` iff `(category, type)` is one of the 32 defined combos.
     pub fn is_known_combination(&self, category: &str, type_name: &str) -> bool {
-        self.type_schemas
-            .contains_key(&(category.to_string(), type_name.to_string()))
+        self.find_entry(category, type_name).is_some()
     }
 }
 
