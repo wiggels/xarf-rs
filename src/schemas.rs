@@ -117,6 +117,15 @@ impl Retrieve for StaticRetriever {
     }
 }
 
+/// Description + recommendation flag for one field, surfaced by
+/// `show_missing_optional` validation.
+#[derive(Debug, Clone)]
+pub struct FieldMeta {
+    pub name: String,
+    pub description: String,
+    pub recommended: bool,
+}
+
 /// One row in the type-schema table. Stored in a slice sorted by
 /// `(category, type_name)` so lookups are a zero-alloc binary search.
 #[derive(Debug)]
@@ -124,6 +133,12 @@ struct TypeSchemaEntry {
     category: &'static str,
     type_name: &'static str,
     parsed: Value,
+    /// Field names defined by this type (own + base + core), sorted, for
+    /// known-field membership tests during validation.
+    known_fields: Box<[String]>,
+    /// Optional (i.e. non-required, non-core) fields with description +
+    /// recommendation flag, in schema-declaration order.
+    optional_fields: Box<[FieldMeta]>,
 }
 
 /// Parsed schema bodies indexed by `category/type` and by URI. Cheap to clone
@@ -134,6 +149,12 @@ pub struct SchemaRegistry {
     core_schema: Value,
     master_schema: Value,
     master_schema_strict: Value,
+    /// Property names of the core schema (`xarf_version`, etc), in iteration order.
+    core_property_names: Box<[String]>,
+    /// Required-field names of the core schema.
+    core_required: Box<[String]>,
+    /// Optional core fields with description + recommendation flag.
+    core_optional: Box<[FieldMeta]>,
     type_schemas: Box<[TypeSchemaEntry]>,
     retriever: StaticRetriever,
     retriever_strict: StaticRetriever,
@@ -155,6 +176,18 @@ impl SchemaRegistry {
         let content_base: Value = serde_json::from_str(CONTENT_BASE_JSON)
             .map_err(|e| XarfError::Schema(format!("content-base parse: {e}")))?;
 
+        let core_property_names: Box<[String]> = core_schema
+            .get("properties")
+            .and_then(Value::as_object)
+            .map(|o| o.keys().cloned().collect())
+            .unwrap_or_default();
+        let core_required: Box<[String]> = core_schema
+            .get("required")
+            .and_then(Value::as_array)
+            .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+            .unwrap_or_default();
+        let core_optional = build_core_optional(&core_schema, &core_required);
+
         let mut type_schemas: Vec<TypeSchemaEntry> = Vec::with_capacity(TYPE_SCHEMA_SOURCES.len());
         let mut documents = HashMap::new();
         documents.insert(CORE_SCHEMA_URI.to_string(), core_schema.clone());
@@ -168,10 +201,14 @@ impl SchemaRegistry {
                 ))
             })?;
             documents.insert(uri.to_string(), parsed.clone());
+            let known_fields = build_known_fields(&parsed, &content_base);
+            let optional_fields = build_optional_fields(&parsed, &content_base);
             type_schemas.push(TypeSchemaEntry {
                 category,
                 type_name,
                 parsed,
+                known_fields,
+                optional_fields,
             });
         }
         type_schemas.sort_by(|a, b| (a.category, a.type_name).cmp(&(b.category, b.type_name)));
@@ -199,6 +236,9 @@ impl SchemaRegistry {
             core_schema,
             master_schema,
             master_schema_strict,
+            core_property_names,
+            core_required,
+            core_optional,
             type_schemas,
             retriever: StaticRetriever {
                 documents: Arc::new(documents),
@@ -303,6 +343,37 @@ impl SchemaRegistry {
     pub fn is_known_combination(&self, category: &str, type_name: &str) -> bool {
         self.find_entry(category, type_name).is_some()
     }
+
+    /// Sorted list of every field name defined by the type schema for
+    /// `(category, type)` and any base schemas it `$ref`s. Returns `None`
+    /// for unknown combinations.
+    pub fn type_known_fields(&self, category: &str, type_name: &str) -> Option<&[String]> {
+        self.find_entry(category, type_name)
+            .map(|e| e.known_fields.as_ref())
+    }
+
+    /// Optional/recommended fields declared by the type schema for
+    /// `(category, type)` with description + recommendation flag, in
+    /// schema-declaration order.
+    pub fn type_optional_fields(&self, category: &str, type_name: &str) -> Option<&[FieldMeta]> {
+        self.find_entry(category, type_name)
+            .map(|e| e.optional_fields.as_ref())
+    }
+
+    /// Core schema property names, in iteration order.
+    pub fn core_property_names_slice(&self) -> &[String] {
+        &self.core_property_names
+    }
+
+    /// Core schema required-field names.
+    pub fn core_required_slice(&self) -> &[String] {
+        &self.core_required
+    }
+
+    /// Core schema optional fields with description + recommendation flag.
+    pub fn core_optional_fields(&self) -> &[FieldMeta] {
+        &self.core_optional
+    }
 }
 
 /// Process-wide schema registry built lazily on first access.
@@ -318,12 +389,7 @@ pub fn registry() -> &'static SchemaRegistry {
 
 /// Property names defined directly on the core schema (excludes `$defs`).
 pub fn core_property_names() -> Vec<String> {
-    registry()
-        .core_schema()
-        .get("properties")
-        .and_then(Value::as_object)
-        .map(|obj| obj.keys().cloned().collect())
-        .unwrap_or_default()
+    registry().core_property_names_slice().to_vec()
 }
 
 /// Walk a JSON-Schema node and, for any `properties` object, add to its
@@ -397,14 +463,167 @@ pub(crate) fn promote_recommended_to_required(node: &mut Value) {
 
 /// Required property names from the core schema's top-level `required` array.
 pub fn core_required_fields() -> Vec<String> {
-    registry()
-        .core_schema()
-        .get("required")
-        .and_then(Value::as_array)
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|v| v.as_str().map(String::from))
-                .collect()
+    registry().core_required_slice().to_vec()
+}
+
+// ---------------------------------------------------------------------------
+// Field extraction helpers (called once at registry build).
+// ---------------------------------------------------------------------------
+
+const CORE_FIELD_NAMES: &[&str] = &[
+    "xarf_version",
+    "report_id",
+    "timestamp",
+    "reporter",
+    "sender",
+    "source_identifier",
+    "source_port",
+    "category",
+    "type",
+    "evidence_source",
+    "evidence",
+    "tags",
+    "confidence",
+    "description",
+    "legacy_version",
+    "_internal",
+];
+
+/// Build the sorted, deduplicated set of field names declared by `schema`
+/// (including names pulled in from `content-base` via `$ref`).
+fn build_known_fields(schema: &Value, content_base: &Value) -> Box<[String]> {
+    let mut acc: Vec<String> = Vec::new();
+    collect_property_names(schema, content_base, &mut acc);
+    for &name in CORE_FIELD_NAMES {
+        if !acc.iter().any(|n| n == name) {
+            acc.push(name.to_string());
+        }
+    }
+    acc.sort();
+    acc.into_boxed_slice()
+}
+
+fn collect_property_names(schema: &Value, content_base: &Value, out: &mut Vec<String>) {
+    if let Some(Value::Object(props)) = schema.get("properties") {
+        for k in props.keys() {
+            if !out.iter().any(|n| n == k) {
+                out.push(k.clone());
+            }
+        }
+    }
+    if let Some(Value::Array(all_of)) = schema.get("allOf") {
+        for sub in all_of {
+            if let Some(Value::String(href)) = sub.get("$ref") {
+                if href.contains("../xarf-core.json") {
+                    continue;
+                }
+                if href.contains("content-base.json") {
+                    collect_property_names(content_base, content_base, out);
+                }
+                continue;
+            }
+            collect_property_names(sub, content_base, out);
+        }
+    }
+}
+
+fn build_core_optional(core_schema: &Value, required: &[String]) -> Box<[FieldMeta]> {
+    let Some(props) = core_schema.get("properties").and_then(Value::as_object) else {
+        return Box::default();
+    };
+    let mut out: Vec<FieldMeta> = props
+        .iter()
+        .filter_map(|(name, v)| {
+            if required.iter().any(|r| r == name) || name == "_internal" {
+                return None;
+            }
+            let pmap = v.as_object()?;
+            let recommended = pmap.get("x-recommended") == Some(&Value::Bool(true));
+            let description = pmap
+                .get("description")
+                .and_then(Value::as_str)
+                .map(String::from)
+                .unwrap_or_else(|| format!("Optional field: {name}"));
+            Some(FieldMeta {
+                name: name.clone(),
+                description,
+                recommended,
+            })
         })
-        .unwrap_or_default()
+        .collect();
+    out.sort_by(|a, b| a.name.cmp(&b.name));
+    out.into_boxed_slice()
+}
+
+fn build_optional_fields(schema: &Value, content_base: &Value) -> Box<[FieldMeta]> {
+    use std::collections::BTreeSet;
+    let mut out: Vec<FieldMeta> = Vec::new();
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    collect_type_optional(
+        schema,
+        content_base,
+        &BTreeSet::new(),
+        &mut out,
+        &mut seen,
+    );
+    out.into_boxed_slice()
+}
+
+fn collect_type_optional(
+    schema: &Value,
+    content_base: &Value,
+    accumulated_required: &std::collections::BTreeSet<String>,
+    out: &mut Vec<FieldMeta>,
+    seen: &mut std::collections::BTreeSet<String>,
+) {
+    use std::collections::BTreeSet;
+
+    let core: BTreeSet<&str> = CORE_FIELD_NAMES.iter().copied().collect();
+    const SKIP: &[&str] = &["category", "type", "_internal"];
+
+    let mut required = accumulated_required.clone();
+    if let Some(Value::Array(arr)) = schema.get("required") {
+        for v in arr {
+            if let Some(s) = v.as_str() {
+                required.insert(s.to_string());
+            }
+        }
+    }
+
+    if let Some(Value::Object(props)) = schema.get("properties") {
+        for (k, v) in props {
+            if core.contains(k.as_str()) || SKIP.iter().any(|s| *s == k.as_str()) {
+                continue;
+            }
+            if required.contains(k) || !seen.insert(k.clone()) {
+                continue;
+            }
+            let description = v
+                .get("description")
+                .and_then(Value::as_str)
+                .map(String::from)
+                .unwrap_or_else(|| format!("Optional field: {k}"));
+            let recommended = v.get("x-recommended") == Some(&Value::Bool(true));
+            out.push(FieldMeta {
+                name: k.clone(),
+                description,
+                recommended,
+            });
+        }
+    }
+
+    if let Some(Value::Array(all_of)) = schema.get("allOf") {
+        for sub in all_of {
+            if let Some(Value::String(href)) = sub.get("$ref") {
+                if !href.contains("-base.json") {
+                    continue;
+                }
+                if href.contains("content-base.json") {
+                    collect_type_optional(content_base, content_base, &required, out, seen);
+                }
+            } else {
+                collect_type_optional(sub, content_base, &required, out, seen);
+            }
+        }
+    }
 }
