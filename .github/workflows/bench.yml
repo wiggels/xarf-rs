@@ -108,10 +108,11 @@ jobs:
           # On PRs we don't push to gh-pages, just alert.
           # On main we push history.
           auto-push: ${{ github.event_name == 'push' }}
-          # 110 = fail if any benchmark is more than 10% slower than baseline.
-          # Bump this if you have noisier hardware; lower it for tighter
-          # regression detection.
-          alert-threshold: '110%'
+          # 125 = fail if any benchmark is more than 25% slower than baseline.
+          # ubuntu-latest shared runners commonly drift ±20% between runs due
+          # to noisy neighbors and heterogeneous hardware. Lower this on
+          # dedicated/self-hosted runners for tighter regression detection.
+          alert-threshold: '125%'
           comment-on-alert: true
           fail-on-alert: true
           # Annotate the PR commit so the regression is visible in the
