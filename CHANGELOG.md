@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/wiggels/xarf-rs/compare/v0.1.3...v0.1.4) - 2026-05-12
+
+### Changed
+
+- Deprecation_warning returns &'static str
+- Replace once_cell::Lazy with std::sync::LazyLock
+
+### Fixed
+
+- Satisfy rustfmt, clippy, and rustdoc lints
+
+### Performance
+
+- Eliminate unnecessary clones in v3 conversion path
+- Cache per-type field metadata in schema registry
+- Zero-alloc schema registry lookups
+- Vectorize hex encoding for evidence hashing
+
 ## [0.1.3](https://github.com/wiggels/xarf-rs/compare/v0.1.2...v0.1.3) - 2026-05-12
 
 ### Fixed
