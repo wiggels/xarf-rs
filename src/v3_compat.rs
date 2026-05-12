@@ -17,12 +17,11 @@ use crate::error::XarfError;
 use crate::generator::SPEC_VERSION;
 
 /// The canonical deprecation message attached to every v3 → v4 conversion.
-pub fn deprecation_warning() -> String {
+pub fn deprecation_warning() -> &'static str {
     "DEPRECATION WARNING: XARF v3 format detected. \
      The v3 format has been automatically converted to v4. \
      Please update your systems to generate v4 reports directly. \
      v3 support will be removed in a future major version."
-        .to_string()
 }
 
 /// Heuristic from the JS/Python reference implementations: a top-level
