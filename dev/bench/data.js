@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778541092661,
+  "lastUpdate": 1778549087686,
   "repoUrl": "https://github.com/wiggels/xarf-rs",
   "entries": {
     "Benchmark": [
@@ -467,6 +467,240 @@ window.BENCHMARK_DATA = {
             "name": "round_trip/parse_then_serialize_large",
             "value": 76228,
             "range": "± 189",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hwigelsworth@vultr.com",
+            "name": "Hunter Wigelsworth",
+            "username": "wiggels"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9e90e1b1613aeb625b48a2236e6a66e3f84e4c87",
+          "message": "Merge pull request #5 from wiggels/investigate-perf-regression-VBprw\n\nfix: raise bench alert threshold to 125% for shared runner noise",
+          "timestamp": "2026-05-11T21:18:10-04:00",
+          "tree_id": "3ae9af8cbe50bea4247c7c8155ced80f4871c4b0",
+          "url": "https://github.com/wiggels/xarf-rs/commit/9e90e1b1613aeb625b48a2236e6a66e3f84e4c87"
+        },
+        "date": 1778549086869,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "parse/small_spam_str",
+            "value": 22152,
+            "range": "± 633",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/ddos_str",
+            "value": 19558,
+            "range": "± 391",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/large_spam_str",
+            "value": 52808,
+            "range": "± 537",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/small_spam_prevalued",
+            "value": 17894,
+            "range": "± 2385",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/small_spam_strict",
+            "value": 24029,
+            "range": "± 193",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "parse/small_spam_show_missing",
+            "value": 29724,
+            "range": "± 320",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "validate/small_spam_normal",
+            "value": 14383,
+            "range": "± 349",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "validate/small_spam_strict",
+            "value": 17905,
+            "range": "± 778",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "validate/ddos_normal",
+            "value": 12489,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "generate/minimal_spam_build",
+            "value": 16230,
+            "range": "± 255",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "generate/spam_build_with_evidence",
+            "value": 19845,
+            "range": "± 128",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/256",
+            "value": 1901,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/256",
+            "value": 3838,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/256",
+            "value": 1419,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/256",
+            "value": 1591,
+            "range": "± 33",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/4096",
+            "value": 6464,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/4096",
+            "value": 13146,
+            "range": "± 404",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/4096",
+            "value": 5756,
+            "range": "± 180",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/4096",
+            "value": 10569,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/65536",
+            "value": 79131,
+            "range": "± 173",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/65536",
+            "value": 161734,
+            "range": "± 2005",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/65536",
+            "value": 76304,
+            "range": "± 5337",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/65536",
+            "value": 154212,
+            "range": "± 495",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha256/1048576",
+            "value": 1264669,
+            "range": "± 38069",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha512/1048576",
+            "value": 2654304,
+            "range": "± 100583",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/sha1/1048576",
+            "value": 1220911,
+            "range": "± 6125",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "create_evidence/md5/1048576",
+            "value": 2463651,
+            "range": "± 2987",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v3/is_v3_report",
+            "value": 74,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v3/convert_v3_to_v4",
+            "value": 9218,
+            "range": "± 284",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v3/parse_v3_full_pipeline",
+            "value": 33862,
+            "range": "± 824",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "registry/known_combination_hit",
+            "value": 56,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "registry/known_combination_miss",
+            "value": 50,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "registry/compile_master_validator",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "round_trip/parse_then_serialize_small",
+            "value": 22918,
+            "range": "± 179",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "round_trip/parse_then_serialize_large",
+            "value": 82057,
+            "range": "± 2072",
             "unit": "ns/iter"
           }
         ]
