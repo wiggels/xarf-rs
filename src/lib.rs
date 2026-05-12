@@ -45,6 +45,7 @@
 
 pub mod error;
 pub mod generator;
+mod hex;
 pub mod model;
 pub mod parser;
 pub mod schemas;

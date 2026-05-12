@@ -254,7 +254,7 @@ fn convert_attachments(
         let raw_b64 = att.get("Data").and_then(Value::as_str).unwrap_or("");
         let raw_bytes = BASE64.decode(raw_b64).unwrap_or_default();
         let digest = Sha256::digest(&raw_bytes);
-        let hash = format!("sha256:{}", hex(&digest));
+        let hash = format!("sha256:{}", crate::hex::encode(&digest));
 
         let content_type = att
             .get("ContentType")
@@ -276,14 +276,6 @@ fn convert_attachments(
         out.push(Value::Object(item));
     }
     Some(out)
-}
-
-fn hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{b:02x}"));
-    }
-    s
 }
 
 fn add_messaging_fields(
